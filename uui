@@ -1,0 +1,2478 @@
+#!/bin/bash
+#-------------------------------------------------------------------------------
+#Created by helmuthdu mailto: helmuthdu[at]gmail[dot]com
+#Inspired by Andreas Freitag, aka nexxx script
+#-------------------------------------------------------------------------------
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#-------------------------------------------------------------------------------
+# Run this script after your first boot with archlinux (as root)
+
+source uuiscript
+
+KDE=0
+LXDE=0
+XFCE=0
+GNOME=0
+
+APTGET=0
+APTITUDE=0
+
+BASICSETUP=0
+DESKTOPENVIRONMENT=0
+ACCESSORIES=0
+DEVELOPMENT=0
+OFFICE=0
+SYSTEM=0
+GRAPHICS=0
+INTERNET=0
+AUDIO=0
+VIDEO=0
+LAMP=0
+GAMES=0
+FONTS=0
+FONTSCONFIG=0
+CLEANPACKAGES=0
+
+ARCHI=`uname -m`
+
+prompt1="Enter your option: "
+prompt2="Enter n° of options (ex: 1 2 3 or 1-3): "
+
+function read_input(){ #{{{
+    if [ $USE_SCRIPT -eq 1 ]; then
+        OPTION=$1
+    else
+        read -p "$prompt1: " OPTION
+    fi
+} #}}}
+function read_input_text(){ #{{{
+    if [ $USE_SCRIPT -eq 1 ]; then
+        OPTION=$2
+    else
+        read -p "$1 [y][N]: " OPTION
+        echo ""
+    fi
+    OPTION=`echo "$OPTION" | tr '[:upper:]' '[:lower:]'`
+} #}}}
+function read_input_options(){ #{{{
+    local line
+    local packages
+    if [ $USE_SCRIPT -eq 1 ]; then
+        array=("$1")
+    else
+        read -p "$prompt2" OPTION
+        array=("$OPTION")
+    fi
+    for line in ${array[@]/,/ }; do
+        if [[ ${line/-/} != $line ]]; then
+            for ((i=${line%-*}; i<=${line#*-}; i++)); do
+                packages+=($i);
+            done
+        else
+            packages+=($line)
+        fi
+    done
+    OPTIONS=("${packages[@]}")
+} #}}}
+function print_line(){ #{{{
+    printf "%$(tput cols)s\n"|tr ' ' '-'
+} #}}}
+function print_title (){ #{{{
+    clear
+    print_line
+    echo -e "# $1"
+    print_line
+    echo ""
+} #}}}
+function check_package(){ #{{{
+    for PACKAGE in $1; do
+        if dpkg -l $PACKAGE &>/dev/null; then
+            return 0
+        fi
+    done
+    return 1
+} #}}}
+function checkbox(){ #{{{
+    if [ $1 -eq 1 ]; then
+        echo "[X]"
+    else
+        echo "[ ]"
+    fi
+} #}}}
+function checkbox_package(){ #{{{
+    if check_package "$1"; then
+        checkbox 1
+    else
+        checkbox 0
+    fi
+} #}}}
+function check_repository(){ #{{{
+    if ls /etc/apt/sources.list.d/ | grep $1 &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+} #}}}
+function package_install(){ #{{{
+    FORCECHECK="n"
+    for PACKAGE in $1; do
+        if ! check_package "$PACKAGE" ; then
+            if [ "$APTITUDE " -eq 1 ]; then
+                su -l $USERNAME --command="sudo aptitude install -y $PACKAGE"
+            else
+                su -l $USERNAME --command="sudo apt-get install -y $PACKAGE"
+            fi
+        else
+            echo -e "Warning: $PACKAGE is up to date --skipping"
+        fi
+    done
+} #}}}
+function contains_element(){ #{{{
+    for e in "${@:2}"; do [[ "$e" = "$1" ]] && break; done;
+} #}}}
+function invalid_option(){ #{{{
+    print_line
+    echo "Invalid option. Try another one."
+    pause_function
+} #}}}
+function pause_function(){ #{{{
+    print_line
+    if [ "$USE_SCRIPT" -ne 1 ]; then
+        read -e -sn 1 -p "Press any key to continue..."
+    fi
+} #}}}
+function install_status(){ #{{{
+    if [ $? -ne 0 ] ; then
+        CURRENT_STATUS=-1
+    else
+        CURRENT_STATUS=1
+    fi
+} #}}}
+function sumary(){ #{{{
+    case $CURRENT_STATUS in
+        0)
+            print_line
+            echo "$1 not successful (Canceled)"
+            ;;
+        -1)
+            print_line
+            echo "$1 not successful (Error)"
+            ;;
+        1)
+            print_line
+            echo "$1 successful"
+            ;;
+        *)
+            print_line
+            echo "WRONG ARG GIVEN"
+            ;;
+    esac
+} #}}}
+function reboot_now(){ #{{{
+    read_input_text "Reboot now?"
+    case "$OPTION" in
+        "y")
+            echo "Thanks for using the Archlinux Ultimate Install script by helmuthdu"
+            echo "Your Computer will now restart"
+            pause_function
+            reboot
+            exit 0
+            ;;
+        *)
+            ;;
+    esac
+} #}}}
+function elihw() { #{{{
+    if [ "$OPT" = "b" ] || [ "$OPT" = "d" ];then
+        break;
+    fi
+} #}}}
+
+#WELCOME {{{
+function welcome(){
+    clear
+    echo "Welcome to the Archlinux Ultimate install script by helmuthdu"
+    print_line
+    echo "Requirements:"
+    echo "-> Archlinux installation"
+    echo "-> Run script as root user"
+    echo "-> Working internet connection"
+    print_line
+    echo "Script can be cancelled at any time with CTRL+C"
+    print_line
+    echo "it's highly recommended that you read this script before using it"
+    echo "This version is still in BETA. Send bugreports to: "
+    echo "http://www.github.com/helmuthdu/aui"
+    pause_function
+}
+#}}}
+#CHECK ROOT {{{
+function check_root() {
+    CURRENTUSER="$(whoami)"
+    if [ $CURRENTUSER != "root" ]; then
+        echo "Current user is NOT 'root'. EXIT now"
+        pause_function
+        exit 1
+    fi
+}
+#}}}
+#LANGUAGE SELECTOR {{{
+function language_selector(){
+    #DETECTS THE SYSTEM LANGUAGE {{{
+    #automatically detects the system language based on your rc.conf
+    LANGUAGE=`locale | grep LANGUAGE | sed 's/LANGUAGE=//' | sed 's/://'`
+    #KDE #{{{
+    if [ $LANGUAGE = "pt_BR" ]; then
+        LANGUAGE_KDE="ptbr"
+    elif [ $LANGUAGE = "en_GB" ] || [ $LANGUAGE = "en_US" ]; then
+        LANGUAGE_KDE="engb"
+    else
+        LANGUAGE_KDE=`echo $LANGUAGE | cut -d\_ -f1`
+    fi
+    #}}}
+    #FIREFOX #{{{
+    LANGUAGE_FF=`echo $LANGUAGE | cut -d\_ -f1`
+    #}}}
+    #HUNSPELL #{{{
+    LANGUAGE_HS=`echo $LANGUAGE | cut -d\_ -f1`
+    #}}}
+    #ASPELL #{{{
+    LANGUAGE_AS=`echo $LANGUAGE | cut -d\_ -f1`
+    #}}}
+    #LIBREOFFICE #{{{
+    LANGUAGE_LO=`echo $LANGUAGE | cut -d\_ -f1`
+    #}}}
+    #}}}
+    print_title "LANGUAGE"
+    read_input_text "Default system language: \"$LANGUAGE\"" $LANGSELECT
+    case "$OPTION" in
+        "n")
+            read -p "New system language [ex: en_US]: " LANGUAGE
+            #KDE #{{{
+            if [ $LANGUAGE = "pt_BR" ]; then
+                LANGUAGE_KDE="ptbr"
+            elif [ $LANGUAGE = "en_GB" ] || [ $LANGUAGE = "en_US" ]; then
+                LANGUAGE_KDE="engb"
+            else
+                LANGUAGE_KDE=`echo $LANGUAGE | cut -d\_ -f1`
+            fi
+            #}}}
+            #FIREFOX #{{{
+            LANGUAGE_FF=`echo $LANGUAGE | cut -d\_ -f1`
+            #}}}
+            #HUNSPELL #{{{
+            LANGUAGE_HS=`echo $LANGUAGE | cut -d\_ -f1`
+            #}}}
+            #ASPELL #{{{
+            LANGUAGE_AS=`echo $LANGUAGE | cut -d\_ -f1`
+            #}}}
+            #LIBREOFFICE #{{{
+            LANGUAGE_LO=`echo $LANGUAGE | cut -d\_ -f1`
+            #}}}
+            ;;
+        *)
+            ;;
+    esac
+    pause_function
+}
+#}}}
+#CUSTOM REPOSITORIES {{{
+function custom_repositories(){
+    function repository_install(){
+        echo -e "\n$1 repository added into pacman.conf file"
+        pause_function
+    }
+    print_title "CUSTOM REPOSITORIES"
+    read_input_text "Add custom repositories" $CUSTOMREPO
+    case "$OPTION" in
+        "y")
+            #CUSTOM REPOSITORIES {{{
+            while [ 1 ]
+            do
+                print_title "CUSTOM REPOSITORIES - https://wiki.archlinux.org/index.php/Unofficial_User_Repositories"
+                echo " 1) Elementary"
+                echo " 2) GNOME 3"
+                echo " 3) Jdownloader"
+                echo " 4) Medibuntu"
+                echo " 5) Themes/Icons"
+                echo " 6) Ubuntu-tweak"
+                echo " 7) Webupd8"
+                echo ""
+                echo " a) \"Add Custom\""
+                echo ""
+                echo " d) DONE"
+                echo ""
+                CUSTOMREPO+=" d"
+                read_input_options "$CUSTOMREPO"
+                for OPT in ${OPTIONS[@]}; do
+                    case $OPT in
+                        1)
+                            add-apt-repository -y ppa:elementary-os/daily
+                            add-apt-repository -y ppa:nemequ/sqlheavy
+                            repository_install "elementary"
+                            ;;
+                        2)
+                            add-apt-repository -y ppa:webupd8team/gnome3
+                            repository_install "GNOME 3"
+                            ;;
+                        3)
+                            add-apt-repository -y ppa:jd-team/jdownloader
+                            repository_install "Jdownloader"
+                            ;;
+                            4)
+                            wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list
+                            apt-get update
+                            apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring
+                            apt-get update
+                            repository_install "Medibuntu"
+                            ;;
+                        5)
+                            add-apt-repository -y ppa:tiheum/equinox
+                            add-apt-repository -y ppa:webupd8team/themes
+                            repository_install "Themes & Icons"
+                            ;;
+                        6)
+                            add-apt-repository -y ppa:ubuntu-tweak-testing/ppa
+                            repository_install "Ubuntu-tweak"
+                            ;;
+                        7)
+                            add-apt-repository -y ppa:nilarimogard/webupd8
+                            repository_install "Webupd8"
+                            ;;
+                        "a")
+                            read -p "Repository Name [ex: elementary-os]: " REPONAME
+                            add-apt-repository -y ppa:$REPONAME
+                            repository_install "$REPONAME"
+                            ;;
+                        "d")
+                            break
+                            ;;
+                        *)
+                            invalid_option
+                            ;;
+                    esac
+                done
+            elihw
+            done
+            apt-get update
+            install_status
+            ;;
+            #}}}
+        *)
+            CURRENT_STATUS=0
+            ;;
+    esac
+    sumary "Custom repositories configuration"
+    pause_function
+}
+#}}}
+#SYSTEM UPDATE {{{
+function system_upgrade(){
+    print_title "UPDATING YOUR SYSTEM"
+	read -p "Update your system [y][n]: " OPTION
+	if [ $OPTION = "y" ]; then
+        apt-get update
+        apt-get upgrade
+    fi
+    reboot_now
+}
+#}}}
+#SELECT USER {{{
+function select_user(){
+    create_new_user(){ #{{{
+        read -p "Username: " USERNAME
+        useradd -m -g users -G  adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare -s /bin/bash $USERNAME
+        passwd $USERNAME
+        cp /etc/skel/.* /home/$USERNAME/
+        #BASHRC {{{
+            print_title "BASHRC - https://wiki.archlinux.org/index.php/Bashrc"
+            apt-get install -y git
+            git clone git://github.com/helmuthdu/dotfiles
+            cp dotfiles/.* ~
+            cp dotfiles/.* /home/$USERNAME/
+            rm -fr dotfiles
+            print_title "DEFAULT EDITOR"
+            EDITOR=("Nano" "Vim");
+            PS3="$prompt1"
+            echo -e "Choose default editor\n"
+            select OPT in "${EDITOR[@]}"; do
+                case "$REPLY" in
+                    1)
+                        sed -i '/EDITOR/s/vim/nano/' /home/$USERNAME/.bashrc
+                        sed -i '/VISUAL/s/vim/nano/' /home/$USERNAME/.bashrc
+                        sed -i '/EDITOR/s/vim/nano/' ~/.bashrc
+                        sed -i '/VISUAL/s/vim/nano/' ~/.bashrc
+                        break
+                        ;;
+                    2)
+                        # VIM
+                        apt-get install -y vim ctags ack
+                        if ! check_package "discount" ; then
+                            su -l $USERNAME --command="
+                                wget http://aur.archlinux.org/packages/discount/discount.tar.gz;
+                                tar zxvf discount.tar.gz;
+                                cd discount;
+                                makepkg -si --noconfirm;
+                                cd ..;
+                                rm -fr discount*
+                            "
+                        fi
+                        # VIMRC
+                        git clone git://github.com/helmuthdu/vim
+                        mv vim /home/$USERNAME/.vim
+                        ln -sf /home/$USERNAME/.vim/vimrc /home/$USERNAME/.vimrc
+                        # PENTADACTYL [FIREFOX]
+                        git clone git://github.com/helmuthdu/pentadactyl
+                        mv pentadactyl /home/$USERNAME/.pentadactyl
+                        ln -sf /home/$USERNAME/.pentadactyl/pentadactylrc /home/$USERNAME/.pentadactylrc
+                        break
+                        ;;
+                    *)
+                        invalid_option
+                        ;;
+                esac
+            done
+            chown -R $USERNAME:users /home/$USERNAME/.*
+        #}}}
+    } #}}}
+    print_title "SELECT USER ACCOUNT - https://wiki.archlinux.org/index.php/Users_and_Groups"
+    users=(`cat /etc/passwd | ls "/home" | sed 's/\///' | cut -d: -f1`);
+    PS3="$prompt1"
+    echo "Avaliable Users:"
+    if [ $(( ${#users[@]} )) -gt 0 ]; then
+        echo -e "WARNING: THE SELECTED USER MUST HAVE SUDO PRIVILEGES\n"
+    else
+        echo ""
+    fi
+    select OPT in "${users[@]}" "Create new user"; do
+        if [ "$OPT" == "Create new user" ]; then
+            create_new_user
+            break
+        elif contains_element "$OPT" "${users[@]}"; then
+            USERNAME=$OPT
+            break
+        else
+            invalid_option
+        fi
+    done
+}
+#}}}
+#AUR HELPER {{{
+function choose_aurhelper(){
+    print_title "PACKAGE MANAGER"
+    aurhelper=("apt-get" "aptitude")
+    PS3="$prompt1"
+    echo -e "Choose your default package manager\n"
+    select OPT in "${aurhelper[@]}"; do
+        case "$REPLY" in
+            1)
+                APTGET=1
+                install_status
+                break
+                ;;
+            2)
+                apt-get install aptitude
+                install_status
+                APTITUDE=1
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+    sumary "AUR Helper installation"
+    pause_function
+}
+#}}}
+#BASIC SETUP{{{
+function install_basic_setup(){
+    print_title "(UN)COMPRESS TOOLS"
+    apt-get install -y zip unzip unrar p7zip
+    print_title "SSH"
+    apt-get install -y openssh-server
+}
+#}}}
+#VIDEO CARDS {{{
+function install_video_cards(){
+    print_title "VIDEO CARD"
+    echo "Select your GPU:"
+    echo " 1) ATI"
+    echo " 2) nVidia"
+    echo " 2) Virtualbox"
+    echo ""
+    echo " s) SKIP"
+    echo ""
+    read_input $VIDEOCARD
+    case "$OPTION" in
+        1)
+            package_install "fglrx"
+            install_status
+            sumary "ATI GPU driver installation"
+            ;;
+        2)
+            package_install "nvidia-current"
+            install_status
+            sumary "nVidia GPU driver installation"
+            ;;
+        3)
+            package_install "virtualbox-guest-additions"
+            gpasswd -a $USERNAME vboxsf
+            install_status
+            sumary "Virtualbox guest additions (incl. video drivers) installation"
+            ;;
+        *)
+            CURRENT_STATUS=0
+            sumary "GPU drivers installation"
+            ;;
+    esac
+    pause_function
+}
+#}}}
+#GIT ACCESS THRU A FIREWALL {{{
+function install_git_tor(){
+    print_title "GIT-TOR - https://wiki.archlinux.org/index.php/Tor"
+    read_input_text "Ensuring access to GIT through a firewall (bypass college firewall)" $GITTOR
+    case "$OPTION" in
+        "y")
+            package_install "netcat-openbsd vidalia privoxy git"
+            if [ ! -f /usr/bin/proxy-wrapper ]; then
+                echo 'forward-socks5   /               127.0.0.1:9050 .' >> /etc/privoxy/config
+                echo -e '#!/bin/bash\nnc -xlocalhost:9050 -X5 $*' > /usr/bin/proxy-wrapper
+                chmod +x /usr/bin/proxy-wrapper
+                echo -e '\nexport GIT_PROXY_COMMAND="/usr/bin/proxy-wrapper"' >> /etc/bash.bashrc
+                export GIT_PROXY_COMMAND="/usr/bin/proxy-wrapper"
+                su -l $USERNAME --command="export GIT_PROXY_COMMAND=\"/usr/bin/proxy-wrapper\""
+            fi
+            su -l $USERNAME --command="sudo service tor restart"
+            su -l $USERNAME --command="sudo service privoxy restart"
+            install_status
+            ;;
+        *)
+            CURRENT_STATUS=0
+            ;;
+    esac
+    sumary "GIT-TOR installation"
+    pause_function
+}
+#}}}
+#DESKTOP ENVIRONMENT {{{
+function install_desktop_environment(){
+    function install_icons() { #{{{
+        while [ 1 ]
+        do
+            print_title "GNOME ICONS"
+            echo " 1) $(checkbox_package "faenza-icon-theme") Faenza"
+            echo " 2) $(checkbox_package "faenza-cupertino") Faenza-Cupertino"
+            echo " 3) $(checkbox_package "faience-icon-theme") Faience"
+            echo " 4) $(checkbox_package "elementary-icon-theme") Elementary"
+            echo ""
+            echo " b) BACK"
+            echo ""
+            GNOME_ICONS+=" b"
+            read_input_options "$GNOME_ICONS"
+            for OPT in ${OPTIONS[@]}; do
+                case "$OPT" in
+                    1)
+                        package_install "faenza-icon-theme"
+                        ;;
+                    2)
+                        package_install "faenza-cupertino"
+                        ;;
+                    3)
+                        package_install "faience-icon-theme"
+                        ;;
+                    4)
+                        package_install "elementary-icon-theme"
+                        ;;
+                    "b")
+                        break
+                        ;;
+                    *)
+                        invalid_option
+                        ;;
+                esac
+            done
+        elihw
+        done
+    } #}}}
+    print_title "DESKTOP ENVIRONMENT"
+    echo "Select your distro:"
+    echo " 1) Ubuntu"
+    echo " 2) Kubuntu"
+    echo " 3) Xubuntu"
+    echo " 4) Lubuntu"
+    echo ""
+    echo " b) BACK"
+    read_input $DESKTOPENV
+    case "$OPTION" in
+        1)
+            #GNOME {{{
+            print_title "GNOME"
+            apt-get install -y gedit-plugins gnome-tweak-tool
+            package_install "nautilus-open-terminal"
+            #GNOME CUSTOMIZATION {{{
+            while [ 1 ]
+            do
+                print_title "GNOME CUSTOMIZATION"
+                echo " 1) $(checkbox_package "faenza-icon-theme faenza-cupertino faience-icon-theme elementary-icon-theme") Gnome Icons [Faience, Faenza, Elementary]"
+                echo " 2) $(checkbox_package "egtk orion-gtk-theme zukitwo-theme-all") Gnome Themes [Zukitwo, Orion, eGTK, Light, Aldabra]"
+                echo " 3) $(checkbox_package "gpaste gnome-shell-extension-gtile-git gnome-shell-extension-mediaplayer-git gnome-shell-extension-noa11y-git gnome-shell-extension-pomodoro gnome-shell-extension-user-theme gnome-shell-extension-weather-git gnome-shell-system-monitor-applet-git") GnomeShell Extensions"
+                echo " 4) $(checkbox_package "gnome-shell-theme-eos gnome-shell-theme-dark-shine gnome-shell-theme-faience gnome-shell-theme-nord") GnomeShell Themes [eOS, Nord, Faience, Dark Shine]"
+                echo " 5) $(checkbox_package "gnome-activity-journal") Gnome Activity Journal "
+                echo " 6) $(checkbox_package "gnome-packagekit") Packagekit"
+                echo ""
+                echo " d) DONE"
+                echo ""
+                GNOME_OPTIONS+=" d"
+                read_input_options "$GNOME_OPTIONS"
+                for OPT in ${OPTIONS[@]}; do
+                    case "$OPT" in
+                        1)
+                            install_icons
+                            OPT=1
+                            ;;
+                        2)
+                            #THEMES {{{
+                            while [ 1 ]
+                            do
+                                print_title "GNOME THEMES"
+                                echo " 1) $(checkbox_package "gtk-theme-aldabra") Aldabra"
+                                echo " 2) $(checkbox_package "gtk-theme-boomerang") Boomerang"
+                                echo " 3) $(checkbox_package "egtk") eGTK"
+                                echo " 4) $(checkbox_package "orion-gtk-theme") Orion"
+                                echo " 5) $(checkbox_package "zukitwo-theme-all") Zukitwo"
+                                echo ""
+                                echo " b) BACK"
+                                echo ""
+                                GNOME_THEMES+=" b"
+                                read_input_options "$GNOME_THEMES"
+                                for OPT in ${OPTIONS[@]}; do
+                                    case "$OPT" in
+                                        1)
+                                            package_install "gtk-theme-aldabra"
+                                            ;;
+                                        2)
+                                            package_install "gtk-theme-boomerang"
+                                            ;;
+                                        3)
+                                            package_install "egtk"
+                                            ;;
+                                        4)
+                                            package_install "orion-gtk-theme"
+                                            ;;
+                                        5)
+                                            package_install "zukitwo-theme-all"
+                                            ;;
+                                        "b")
+                                            break
+                                            ;;
+                                        *)
+                                            invalid_option
+                                            ;;
+                                    esac
+                                done
+                            elihw
+                            done
+                            #}}}
+                            OPT=2
+                            ;;
+                        3)
+                            #GNOMESHELL EXTENSIONS {{{
+                            while [ 1 ]
+                            do
+                                print_title "GNOMESHELL EXTENSIONS"
+                                echo " 1) $(checkbox_package "gnome-shell-extensions-gpaste") gpaste"
+                                echo " 2) $(checkbox_package "gnome-shell-extensions-gtile") gtile"
+                                echo " 3) $(checkbox_package "gnome-shell-extensions-mediaplayer") media-player"
+                                echo " 4) $(checkbox_package "gnome-shell-extensions-noa11y") noa11y"
+                                echo " 5) $(checkbox_package "gnome-shell-extensions-pomodoro") pomodoro"
+                                echo " 6) $(checkbox_package "gnome-shell-extensions-system-monitor") system-monitor"
+                                echo " 7) $(checkbox_package "gnome-shell-extensions-user-theme") user-theme"
+                                echo " 8) $(checkbox_package "gnome-shell-extensions-weather") weather"
+                                echo ""
+                                echo " b) BACK"
+                                echo ""
+                                GNOME_EXTENSIONS+=" b"
+                                read_input_options "$GNOME_EXTENSIONS"
+                                for OPT in ${OPTIONS[@]}; do
+                                    case "$OPT" in
+                                        1)
+                                            package_install "gnome-shell-extensionss-gpaste"
+                                            ;;
+                                        2)
+                                            package_install "gnome-shell-extensions-gtile"
+                                            ;;
+                                        3)
+                                            package_install "gnome-shell-extensions-mediaplayer"
+                                            ;;
+                                        4)
+                                            package_install "gnome-shell-extensions-noa11y"
+                                            ;;
+                                        5)
+                                            package_install "gnome-shell-extensions-pomodoro"
+                                            ;;
+                                        6)
+                                            package_install "gnome-shell-extensions-system-monitor"
+                                            ;;
+                                        7)
+                                            package_install "gnome-shell-extensions-user-theme"
+                                            ;;
+                                        8)
+                                            package_install "gnome-shell-extensions-weather"
+                                            ;;
+                                        "b")
+                                            break
+                                            ;;
+                                        *)
+                                            invalid_option
+                                            ;;
+                                    esac
+                                done
+                            elihw
+                            done
+                            #}}}
+                            OPT=3
+                            ;;
+                        4)
+                            #GNOMESHELL THEMES {{{
+                            while [ 1 ]
+                            do
+                                print_title "GNOMESHELL THEMES"
+                                echo " 1) $(checkbox_package "gnome-shell-theme-eos") eOS"
+                                echo " 2) $(checkbox_package "gnome-shell-theme-dark-shine") Dark Shine"
+                                echo " 3) $(checkbox_package "gnome-shell-theme-faience") Faience"
+                                echo " 4) $(checkbox_package "gnome-shell-theme-nord") Nord"
+                                echo ""
+                                echo " b) BACK"
+                                echo ""
+                                GNOME_SHELL_THEMES+=" b"
+                                read_input_options "$GNOME_SHELL_THEMES"
+                                for OPT in ${OPTIONS[@]}; do
+                                    case "$OPT" in
+                                        1)
+                                            package_install "gnome-shell-theme-eos"
+                                            ;;
+                                        2)
+                                            package_install "gnome-shell-theme-dark-shine"
+                                            ;;
+                                        3)
+                                            package_install "gnome-shell-theme-faience"
+                                            ;;
+                                        4)
+                                            package_install "gnome-shell-theme-nord"
+                                            ;;
+                                        "b")
+                                            break
+                                            ;;
+                                        *)
+                                            invalid_option
+                                            ;;
+                                    esac
+                                done
+                            elihw
+                            done
+                            #}}}
+                            OPT=4
+                            ;;
+                        5)
+                            package_install "gnome-activity-journal"
+                            ;;
+                        6)
+                            package_install "gnome-packagekit gnome-settings-daemon-updates"
+                            ;;
+                        "d")
+                            break
+                            ;;
+                        *)
+                            invalid_option
+                            ;;
+                    esac
+                done
+            elihw
+            done
+            #}}}
+            install_status
+            GNOME=1
+            ;;
+            #}}}
+        2)
+            #KDE {{{
+            print_title "KDE"
+            apt-get install -y kde kde-l10n-$LANGUAGE_KDE kipi-plugins
+            pacman -Rcsn kdemultimedia-kscd kdemultimedia-juk kdemultimedia-dragonplayer
+            apt-get install -y kdeadmin-system-config-printer-kde xdg-user-dirs
+            package_install "kde-gtk-config-git"
+            package_install "oxygen-gtk2 oxygen-gtk3 qtcurve-gtk2 qtcurve-kde4 bespin-svn"
+            echo -e 'exec ck-launch-session startkde' >> /home/$USERNAME/.xinitrc
+            #QTCURVE THEMES #{{{
+            wget http://kde-look.org/CONTENT/content-files/144205-Sweet.tar.gz
+            wget http://kde-look.org/CONTENT/content-files/141920-Kawai.tar.gz
+            tar zxvf 144205-Sweet.tar.gz
+            tar zxvf 141920-Kawai.tar.gz
+            rm 144205-Sweet.tar.gz
+            rm 141920-Kawai.tar.gz
+            mkdir -p /home/$USERNAME/.kde4/share/apps/color-schemes
+            mv Sweet/Sweet.colors /home/$USERNAME/.kde4/share/apps/color-schemes
+            mv Kawai/Kawai.colors /home/$USERNAME/.kde4/share/apps/color-schemes
+            mkdir -p /home/$USERNAME/.kde4/share/apps/QtCurve
+            mv Sweet/Sweet.qtcurve /home/$USERNAME/.kde4/share/apps/QtCurve
+            mv Kawai/Kawai.qtcurve /home/$USERNAME/.kde4/share/apps/QtCurve
+            chown -R $USERNAME:users /home/$USERNAME/.kde4
+            rm -fr Kawai Sweet
+            #}}}
+            #KDE CUSTOMIZATION {{{
+            while [ 1 ]
+            do
+                print_title "KDE CUSTOMIZATION"
+                echo " 1) $(checkbox_package "apper") Apper"
+                echo " 2) $(checkbox_package "bangarang") Bangarang"
+                echo " 3) $(checkbox_package "choqok") Choqok"
+                echo " 4) $(checkbox_package "digikam") Digikam"
+                echo " 5) $(checkbox_package "k3b") K3b"
+                echo " 6) $(checkbox_package "rosa-icons kfaenza-icon-theme") KDE Icons [Rosa, KFaenza]"
+                echo " 7) $(checkbox_package "plasma-theme-produkt") Plasma Themes [Caledonia, Produkt, Ronak]"
+                echo " 8) $(checkbox_package "yakuake") Yakuake"
+                echo ""
+                echo " d) DONE"
+                echo ""
+                KDE_OPTIONS+=" d"
+                read_input_options "$KDE_OPTIONS"
+                for OPT in ${OPTIONS[@]}; do
+                    case "$OPT" in
+                        1)
+                            package_install "apper"
+                            ;;
+                        2)
+                            package_install "bangarang"
+                            ;;
+                        3)
+                            package_install "choqok"
+                            ;;
+                        4)
+                            package_install "digikam"
+                            ;;
+                        5)
+                            package_install "k3b dvd+rw-tools"
+                            ;;
+                        6)
+                            package_install "rosa-icons kfaenza-icon-theme"
+                            ;;
+                        7)
+                            package_install "caledonia-bundle plasma-theme-produkt ronak-plasmatheme"
+                            ;;
+                        8)
+                            package_install "yakuake yakuake-skin-plasma-oxygen-panel"
+                            ;;
+                        "d")
+                            break
+                            ;;
+                        *)
+                            invalid_option
+                            ;;
+                    esac
+                done
+            elihw
+            done
+            #}}}
+            add_daemon "kdm"
+            install_status
+            KDE=1
+            ;;
+            #}}}
+        3)
+            #XFCE {{{
+            print_title "XFCE - https://wiki.archlinux.org/index.php/Xfce"
+            apt-get install -y xfce4 xfce4-goodies
+            apt-get install -y polkit-gnome gvfs-smb xdg-user-dirs
+            package_install "automounter"
+            package_install "gnome-defaults-list"
+            echo -e 'exec ck-launch-session startxfce4' >> /home/$USERNAME/.xinitrc
+            #XFCE CUSTOMIZATION{{{
+            while [ 1 ]
+            do
+                print_title "XFCE CUSTOMIZATION"
+                echo " 1) $(checkbox_package "awoken-icons faenza-icon-theme faenza-cupertino-icon-theme faience-icon-theme elementary-icons") Icons [Faience, Faenza, Elementary]"
+                echo " 2) $(checkbox_package "zukitwo-themes") Themes [Zukitwo]"
+                echo " 3) $(checkbox_package "lightdm") LightDM"
+                echo ""
+                echo " d) DONE"
+                echo ""
+                XFCE_OPTIONS+=" d"
+                read_input_options "$XFCE_OPTIONS"
+                for OPT in ${OPTIONS[@]}; do
+                    case "$OPT" in
+                        1)
+                            install_icons
+                            OPT=1
+                            ;;
+                        2)
+                            #THEMES {{{
+                            while [ 1 ]
+                            do
+                                print_title "XFCE THEMES"
+                                echo " 1) $(checkbox_package "xfce-theme-bluebird") Bluebird"
+                                echo " 2) $(checkbox_package "xfce-theme-greybird") Greybird)"
+                                echo " 3) $(checkbox_package "zukitwo-themes") Zukitwo"
+                                echo ""
+                                echo " b) BACK"
+                                echo ""
+                                XFCE_THEMES+=" b"
+                                read_input_options "$XFCE_THEMES"
+                                for OPT in ${OPTIONS[@]}; do
+                                    case "$OPT" in
+                                        1)
+                                            package_install "xfce-theme-bluebird"
+                                            ;;
+                                        2)
+                                            package_install "xfce-theme-greybird"
+                                            ;;
+                                        3)
+                                            package_install "zukitwo-themes"
+                                            ;;
+                                        "b")
+                                            break
+                                            ;;
+                                        *)
+                                            invalid_option
+                                            ;;
+                                    esac
+                                done
+                            elihw
+                            done
+                            #}}}
+                            OPT=2
+                            ;;
+                        3)
+                            package_install "intltool lightdm"
+                            add_daemon "lightdm"
+                            sed -i 's/#greeter-session=.*$/greeter-session=lightdm-gtk-greeter/' /etc/lightdm/lightdm.conf
+                            ;;
+                        "d")
+                            break
+                            ;;
+                        *)
+                            invalid_option
+                            ;;
+                    esac
+                done
+            elihw
+            done
+            #}}}
+            install_status
+            XFCE=1
+            ;;
+            #}}}
+        4)
+            #LXDE {{{
+            print_title "LXDE - http://wiki.archlinux.org/index.php/lxde"
+            apt-get install -y lxde obconf
+            apt-get install -y leafpad xarchiver epdfview
+            apt-get install -y pm-utils upower
+            apt-get install -y polkit-gnome gvfs gvfs-smb xdg-user-dirs
+            package_install "gnome-defaults-list"
+            echo -e 'exec ck-launch-session startlxde' >> /home/$USERNAME/.xinitrc
+            #LXDE CUSTOMIZATION{{{
+            while [ 1 ]
+            do
+                print_title "LXDE CUSTOMIZATION"
+                echo " 1) $(checkbox_package "awoken-icons faenza-icon-theme faenza-cupertino-icon-theme faience-icon-theme elementary-icons") Icons [Faience, Faenza, Elementary]"
+                echo " 2) $(checkbox_package "lxdm") LXDM"
+                echo " 3) $(checkbox_package "xfburn") Xfburn"
+                echo ""
+                echo " d) DONE"
+                echo ""
+                LXDE_OPTIONS+=" d"
+                read_input_options "$LXDE_OPTIONS"
+                for OPT in ${OPTIONS[@]}; do
+                    case "$OPT" in
+                        1)
+                            install_icons
+                            OPT=1
+                            ;;
+                        2)
+                            package_install "lxdm"
+                            add_daemon "lxdm"
+                            ;;
+                        3)
+                            package_install "xfburn"
+                            ;;
+                        "d")
+                            break
+                            ;;
+                        *)
+                            invalid_option
+                            ;;
+                    esac
+                done
+            elihw
+            done
+            #}}}
+            add_daemon "lxdm"
+            install_status
+            LXDE=1
+            ;;
+            #}}}
+        *)
+            CURRENT_STATUS=0
+            ;;
+    esac
+    sumary "Desktop Environment Installation"
+    pause_function
+}
+#}}}
+#ACCESSORIES {{{
+function install_accessories_apps(){
+while [ 1 ]
+do
+    print_title "ACCESSORIES APPS"
+    echo " 1) $(checkbox_package "cairo-dock-bzr") Cairo Dock"
+    echo " 2) $(checkbox_package "conky") Conky + CONKY-colors"
+    echo " 3) $(checkbox_package "deepin-scrot-git") Deepin Scrot"
+    echo " 4) $(checkbox_package "dockbarx") Dockbarx"
+    echo " 5) $(checkbox_package "docky") Docky"
+    echo " 6) $(if [ "$KDE" -eq 1 ]; then echo "$(checkbox_package "speedcrunch") Speedcrunch"; else echo "$(checkbox_package "galculator") Galculator"; fi)"
+    echo " 7) $(checkbox_package "gnome-pie") Gnome-Pie"
+    echo " 8) $(checkbox_package "guake") Guake"
+    echo " 9) $(checkbox_package "kupfer") Kupfer"
+    echo "10) $(checkbox_package "pyrenamer") Pyrenamer"
+    echo "11) $(checkbox_package "shutter") Shutter"
+    echo "12) $(checkbox_package "synapse") Synapse"
+    echo "13) $(checkbox_package "terminator") Terminator"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    ACCESSORIES_OPTIONS+=" b"
+    read_input_options "$ACCESSORIES_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "cairo-dock cairo-dock-plugins"
+                ;;
+            2)
+                package_install "conky-all"
+                sensors-detect
+                ;;
+            3)
+                package_install "deepin-scrot-git"
+                ;;
+            4)
+                package_install "dockbarx"
+                ;;
+            5)
+                package_install "docky"
+                ;;
+            6)
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "speedcrunch"
+                else
+                    package_install "galculator"
+                fi
+                ;;
+            7)
+                package_install "gnome-pie"
+                ;;
+            8)
+                package_install "guake"
+                ;;
+            9)
+                package_install "kupfer"
+                ;;
+            10)
+                package_install "pyrenamer"
+                ;;
+            11)
+                package_install "shutter"
+                ;;
+            12)
+                package_install "synapse"
+                ;;
+            13)
+                package_install "terminator"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#DEVELOPEMENT {{{
+function install_development_apps(){
+while [ 1 ]
+do
+    print_title "DEVELOPMENT APPS"
+    echo " 1) $(checkbox_package "aptana-studio") Aptana Studio"
+    echo " 2) $(checkbox_package "bluefish") Bluefish"
+    echo " 3) $(checkbox_package "eclipse") Eclipse"
+    echo " 4) $(checkbox_package "emacs") Emacs"
+    echo " 5) $(checkbox_package "gvim") Gvim"
+    echo " 6) $(checkbox_package "geany") Geany"
+    echo " 7) $(checkbox_package "intellij-idea-community-edition") IntelliJ IDEA"
+    echo " 8) $(checkbox_package "netbeans") Netbeans"
+    echo " 9) $(checkbox_package "jdk") Oracle Java"
+    echo "10) $(checkbox_package "qtcreator") QT Creator"
+    echo "11) $(checkbox_package "sublime-text") Sublime Text 2"
+    echo "12) $(checkbox_package "gdb") Debugger Tools [Valgrind, Gdb, Splint, Tidyhtml, Pyflakes, Jsl]"
+    echo "13) $(checkbox_package "mysql-workbench") MySQL Workbench"
+    echo "14) $(checkbox_package "meld") Meld"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    DEVELOPMENT_OPTIONS+=" b"
+    read_input_options "$DEVELOPMENT_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "aptana-studio"
+                ;;
+            2)
+                package_install "bluefish"
+                ;;
+            3)
+                #ECLIPSE {{{
+                while [ 1 ]
+                do
+                    print_title "ECLIPSE - https://wiki.archlinux.org/index.php/Eclipse"
+                    echo " 1) $(checkbox_package "eclipse") Eclipse Classic"
+                    echo " 2) $(checkbox_package "eclipse-cdt") Eclipse IDE for C/C++ Developers "
+                    echo " 3) $(checkbox_package "eclipse-android") Android Development Tools for Eclipse"
+                    echo " 4) $(checkbox_package "eclipse-wtp-wst") Web Development Tools for Eclipse"
+                    echo " 5) $(checkbox_package "eclipse-pdt") PHP Development Tools for Eclipse"
+                    echo " 6) $(checkbox_package "eclipse-pydev") Python Development Tools for Eclipse"
+                    echo " 7) $(checkbox_package "eclipse-aptana") Aptana Studio plugin for Eclipse"
+                    echo " 8) $(checkbox_package "eclipse-vrapper") Vim-like editing plugin for Eclipse"
+                    echo " 9) $(checkbox_package "eclipse-egit") Git support plugin for Eclipse"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    ECLIPSE_OPTIONS+=" b"
+                    read_input_options "$ECLIPSE"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "eclipse"
+                                ;;
+                            2)
+                                package_install "eclipse-cdt"
+                                ;;
+                            3)
+                                package_install "eclipse-android android-apktool android-sdk android-sdk-platform-tools android-udev"
+                                ;;
+                            4)
+                                package_install "eclipse-wtp-wst"
+                                ;;
+                            5)
+                                package_install "eclipse-pde"
+                                ;;
+                            6)
+                                package_install "eclipse-pydev"
+                                ;;
+                            7)
+                                package_install "eclipse-aptana"
+                                ;;
+                            8)
+                                package_install "eclipse-vrapper"
+                                ;;
+                            9)
+                                package_install "eclipse-egit"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=3
+                ;;
+            4)
+                package_install "emacs"
+                ;;
+            5)
+                package_install "gvim"
+                ;;
+            6)
+                package_install "geany"
+                ;;
+            7)
+                package_install "intellij-idea-community-edition"
+                ;;
+            8)
+                package_install "netbeans"
+                ;;
+            9)
+                apt-get --remove --purge openjdk-7-jdk
+                apt-get --remove --purge openjdk-7-jre
+                package_install "jdk"
+                ;;
+            10)
+                package_install "qtcreator qt-doc"
+                mkdir -p /home/$USERNAME/.config/Nokia/qtcreator/styles
+                wget http://angrycoding.googlecode.com/svn/branches/qt-creator-monokai-theme/monokai.xml
+                mv monokai.xml /home/$USERNAME/.config/Nokia/qtcreator/styles/
+                chown -R $USERNAME:users /home/$USERNAME/.config
+                ;;
+            11)
+                package_install "sublime-text"
+                ;;
+            12)
+                package_install "valgrind gdb splint tidyhtml pyflakes"
+                package_install "nodejs npm"
+                sudo npm install -g jslint
+                ;;
+            13)
+                #http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/
+                wget http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.38-1ubu1104-i386.deb
+                dpkg -i mysql-workbench-gpl-5.2.38-1ubu1104-i386.deb
+                rm mysql-workbench-gpl-5.2.38-1ubu1104-i386.deb
+                apt-get install -fy
+                ;;
+            14)
+                package_install "meld"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#OFFICE {{{
+function install_office_apps(){
+while [ 1 ]
+do
+    print_title "OFFICE APPS"
+    echo " 1) $(checkbox_package "libreoffice-common") LibreOffice"
+    echo " 2) $(checkbox_package "goffice") GnomeOffice [Abiword, Gnumeric]"
+    echo " 3) $(checkbox_package "texlive-core") Latex + Texmaker"
+    echo " 4) $(if [ "$KDE" -eq 1 ]; then  echo "$(checkbox_package "kchmviewer") Kchmviewer"; else echo "$(checkbox_package "chmsee") Chmsee"; fi)"
+    echo " 5) $(checkbox_package "gcstar") GCStar"
+    echo " 6) $(checkbox_package "wunderlist") Wunderlist"
+    echo " 7) $(checkbox_package "xmind") Xmind"
+    echo " 8) $(checkbox_package "zathura") Zathura"
+    echo " 9) $(checkbox_package "impressive") Impressive"
+    echo "10) $(checkbox_package "ocrfeeder") OCRFeeder"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    OFFICE_OPTIONS+=" b"
+    read_input_options "$OFFICE_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                print_title "LIBREOFFICE"
+                package_install "libreoffice libreoffice-l10n-$LANGUAGE_LO lo-menubar"
+                package_install "hunspell-$LANGUAGE_HS"
+                package_install "aspell-$LANGUAGE_AS"
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "libreoffice-kde4"
+                else
+                    package_install "libreoffice-gnome"
+                fi
+                ;;
+            2)
+                package_install "gnumeric abiword abiword-plugins"
+                package_install "hunspell-$LANGUAGE_HS"
+                package_install "aspell-$LANGUAGE_AS"
+                ;;
+            3)
+                print_title "LATEX"
+                package_install "latex-beamer texlive texlive-latex-extra texlive-lang-portuguese texlive-math-extra"
+                package_install "texmaker"
+                if [ $LANGUAGE = "pt_BR" ]; then
+                    package_install "abntex"
+                fi
+                ;;
+            4)
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "kchmviewer"
+                else
+                    package_install "chmsee"
+                fi
+                ;;
+            5)
+                package_install "gcstar"
+                ;;
+            6)
+                package_install "wunderlist"
+                ;;
+            7)
+                package_install "xmind"
+                ;;
+            8)
+                package_install "zathura"
+                ;;
+            9)
+                package_install "impressive"
+                ;;
+            10)
+                package_install "ocrfeeder tesseract-ocr gocr"
+                package_install "aspell-$LANGUAGE_AS"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#SYSTEM TOOLS {{{
+function install_system_apps(){
+while [ 1 ]
+do
+    print_title "SYSTEM TOOLS APPS"
+    echo " 1) $(checkbox_package "gparted") Gparted"
+    echo " 2) $(checkbox_package "grsync") Grsync"
+    echo " 3) $(checkbox_package "htop") Htop"
+    echo " 4) $(checkbox_package "virtualbox") Virtualbox"
+    echo " 5) $(checkbox_package "wine") Wine"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    SYSTEMTOOLS_OPTIONS+=" b"
+    read_input_options "$SYSTEMTOOLS_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "gparted"
+                ;;
+            2)
+                package_install "grsync"
+                ;;
+            3)
+                package_install "htop"
+                ;;
+            4)
+                package_install "virtualbox"
+                groupadd vboxusers
+                gpasswd -a $USERNAME vboxusers
+                ;;
+            5)
+                package_install "wine wine-gecko winetricks"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#GRAPHICS {{{
+function install_graphics_apps(){
+while [ 1 ]
+do
+    print_title "GRAPHICS APPS"
+    echo " 1) $(checkbox_package "blender") Blender"
+    echo " 2) $(checkbox_package "gimp") Gimp"
+    echo " 3) $(checkbox_package "gimp-plugin-registry") Gimp-plugins"
+    echo " 4) $(checkbox_package "gthumb") Gthumb"
+    echo " 5) $(checkbox_package "inkscape") Inkscape"
+    echo " 6) $(checkbox_package "mcomix") MComix"
+    echo " 7) $(checkbox_package "mypaint") Mypaint"
+    echo " 8) $(checkbox_package "shotwell") Shotwell"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    GRAPHICS_OPTIONS+=" b"
+    read_input_options "$GRAPHICS_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "blender"
+                ;;
+            2)
+                package_install "gimp"
+                ;;
+            3)
+                package_install "gimp-resynthesizer gimp-plugin-registry"
+                ;;
+            4)
+                package_install "gthumb"
+                ;;
+            5)
+                package_install "inkscape uniconvertor python2-numpy python-lxml sozi"
+                ;;
+            6)
+                package_install "mcomix"
+                ;;
+            7)
+                package_install "mypaint"
+                ;;
+            8)
+                package_install "shotwell"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#INTERNET {{{
+function install_internet_apps(){
+while [ 1 ]
+do
+    print_title "INTERNET APPS"
+    echo " 1) $(checkbox_package "dropbox") Dropbox"
+    echo " 2) $(checkbox_package "chromium") Chromium"
+    echo " 3) $(checkbox_package "google-earth") Google Earth"
+    echo " 4) $(checkbox_package "google-chrome") Google Chrome"
+    echo " 5) $(checkbox_package "jdownloader") Jdownloader"
+    echo " 6) $(checkbox_package "irssi") Irssi"
+    echo " 7) $(checkbox_package "firefox") Mozilla Firefox"
+    echo " 8) $(checkbox_package "thunderbird") Mozilla Thunderbird"
+    echo " 9) $(checkbox_package "pidgin") Pidgin"
+    echo "10) $(checkbox_package "remmina") Remmina"
+    echo "11) $(checkbox_package "skype") Skype"
+    echo "12) $(checkbox_package "teamspeak-client") Teamspeak"
+    echo "13) $(checkbox_package "teamviewer") Teamviewer"
+    echo "14) $(if [ "$KDE" -eq 1 ]; then echo "$(checkbox_package "transmission-qt")"; else echo "$(checkbox_package "transmission-gtk")"; fi) Trasmission"
+    echo "15) $(if [ "$KDE" -eq 1 ]; then echo "$(checkbox_package "konversation") Konversation"; else echo "$(checkbox_package "xchat") X-Chat"; fi)"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    INTERNET_OPTIONS+=" b"
+    read_input_options "$INTERNET_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "nautilus-dropbox"
+                ;;
+            2)
+                package_install "chromium flashplugin-installer"
+                ;;
+            3)
+                http://dl.google.com/dl/earth/client/current/google-earth-stable_current_i386.deb
+                dpkg -i google-earth-stable_current_i386.deb
+                rm google-earth-stable_current_i386.deb
+                apt-get install -fy
+                ;;
+            4)
+                wget https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb
+                dpkg -i google-chrome-stable_current_i386.deb
+                rm google-chrome-stable_current_i386.deb
+                apt-get install -fy
+                package_install "flashplugin-installer"
+                ;;
+            5)
+                if ! check_repository "jdownloader"; then
+                    add-apt-repository -y ppa:jd-team/jdownloader
+                    apt-get update
+                fi
+                package_install "jdownloader"
+                ;;
+            6)
+                package_install "irssi"
+                ;;
+            7)
+                package_install "firefox firefox-locale-$LANGUAGE_FF flashplugin-installer"
+                ;;
+            8)
+                package_install "thunderbird thunderbird-locale-$LANGUAGE_FF"
+                ;;
+            9)
+                package_install "pidgin"
+                ;;
+            10)
+                package_install "remmina"
+                ;;
+            11)
+                package_install "skype"
+                ;;
+            12)
+                package_install "teamspeak-client"
+                ;;
+            13)
+                wget http://www.teamviewer.com/download/teamviewer_linux.deb
+                dpkg -i teamviewer_linux.deb
+                rm teamviewer_linux.deb
+                apt-get install -fy
+                ;;
+            14)
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "transmission-qt"
+                else
+                    package_install "transmission-gtk"
+                fi
+                ;;
+            15)
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "konversation"
+                else
+                    package_install "xchat"
+                fi
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#LAMP #{{{
+function install_lamp(){
+print_title "LAMP SERVER - APACHE, MYSQL & PHP + PHPMYADMIN"
+read_input_text "Install LAMP" $LAMP
+case "$OPTION" in
+    "y")
+		apt-get install -y tasksel
+		tasksel install lamp-server
+		apt-get install -y phpmyadmin
+		a2enmod userdir
+        install_status
+        ;;
+    *)
+        CURRENT_STATUS=0
+        ;;
+esac
+sumary "LAMP installation"
+pause_function
+}
+#}}}
+#AUDIO {{{
+function install_audio_apps(){
+while [ 1 ]
+do
+    print_title "AUDIO APPS "
+    echo " 1) $(checkbox_package "amarok") Amarok"
+    echo " 2) $(checkbox_package "audacious") Audacious"
+    echo " 3) $(checkbox_package "banshee") Banshee"
+    echo " 4) $(checkbox_package "beatbox") Beatbox"
+    echo " 5) $(checkbox_package "clementine") Clementine"
+    echo " 6) $(checkbox_package "decibel-audio-player") Decibel"
+    echo " 7) $(checkbox_package "exaile") Exaile"
+    echo " 8) $(checkbox_package "gmusicbrowser") Gmusicbrowser"
+    echo " 9) $(checkbox_package "musique") Musique"
+    echo "10) $(checkbox_package "nuvolaplayer") Nuvola"
+    echo "11) $(checkbox_package "rhythmbox") Rhythmbox"
+    echo "12) $(checkbox_package "spotify") Spotify"
+    echo "13) $(checkbox_package "soundconverter") Soundconverter"
+    echo "14) $(checkbox_package "puddletag") Puddletag"
+    echo "15) $(checkbox_package "audacity") Audacity"
+    echo "16) $(checkbox_package "timidity") MIDI"
+    echo "17) $(checkbox_package "ubuntu-restricted-extras") Codecs"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    AUDIO_OPTIONS+=" b"
+    read_input_options "$AUDIO_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "amarok"
+                ;;
+            2)
+                package_install "audacious audacious-plugins"
+                ;;
+            3)
+                package_install "banshee"
+                ;;
+            4)
+                package_install "beatbox"
+                ;;
+            5)
+                package_install "clementine"
+                ;;
+            6)
+                package_install "decibel-audio-player"
+                ;;
+            7)
+                package_install "exaile"
+                ;;
+            8)
+                package_install "gmusicbrowser"
+                ;;
+            9)
+                package_install "musique"
+                ;;
+            10)
+                if ! check_repository "jdownloader"; then
+                    add-apt-repository -y ppa:nuvola-player-builders/stable
+                    apt-get update
+                fi
+                package_install "nuvolaplayer"
+                ;;
+            11)
+                package_install "rhythmbox"
+                ;;
+            12)
+                package_install "spotify"
+                ;;
+            13)
+                package_install "soundconverter"
+                ;;
+            14)
+                package_install "puddletag"
+                ;;
+            15)
+                package_install "audacity"
+                ;;
+            16)
+                package_install "timidity fluid-soundfont-gs"
+                ;;
+            17)
+                package_install "ubuntu-restricted-extras"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#VIDEO {{{
+function install_video_apps(){
+while [ 1 ]
+do
+    print_title "VIDEO APPS"
+    echo " 1) $(checkbox_package "audience-bzr") Audience"
+    echo " 2) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
+    echo " 3) $(checkbox_package "parole") Parole"
+    echo " 4) $(checkbox_package "minitube") Minitube"
+    echo " 5) $(checkbox_package "rosa-media-player-bin") Rosa Media Player"
+    echo " 6) $(checkbox_package "smplayer") SMplayer"
+    echo " 7) $(checkbox_package "vlc") VLC"
+    echo " 8) $(checkbox_package "xbmc") XBMC"
+    echo " 9) $(checkbox_package "arista-transcoder") Arista"
+    echo "10) $(checkbox_package "transmageddon") Transmageddon"
+    echo "11) $(checkbox_package "kdenlive") Kdenlive"
+    echo "12) $(checkbox_package "openshot") Openshot"
+    echo "13) $(checkbox_package "pitivi") Pitivi"
+    echo "14) $(checkbox_package "kazam-bzr") Kazam"
+    echo "15) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    VIDEO_OPTIONS+=" b"
+    read_input_options "$VIDEO_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "audience-bzr"
+                ;;
+            2)
+                package_install "gnome-mplayer"
+                ;;
+            3)
+                package_install "parole"
+                ;;
+            4)
+                package_install "minitube"
+                ;;
+            5)
+                package_install "rosa-media-player-bin"
+                ;;
+            6)
+                package_install "smplayer smplayer-themes"
+                ;;
+            7)
+                package_install "vlc"
+                if [ "$KDE" -eq 1 ]; then
+                    package_install "phonon-vlc"
+                fi
+                ;;
+            8)
+                package_install "xbmc"
+                ;;
+            9)
+                package_install "arista-transcoder"
+                ;;
+            10)
+                package_install "transmageddon"
+                ;;
+            11)
+                package_install "kdenlive"
+                ;;
+            12)
+                package_install "openshot"
+                ;;
+            13)
+                package_install "pitivi"
+                ;;
+            14)
+                package_install "python-rsvg"
+                package_install "kazam-bzr"
+                ;;
+            15)
+                package_install "libquicktime libdvdread libdvdnav libdvdcss cdrdao"
+                if [ "$ARCHI" = "i686" ]; then
+                    package_install "codecs"
+                else
+                    package_install "codecs64"
+                fi
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#GAMES {{{
+function install_games(){
+while [ 1 ]
+do
+    print_title "GAMES - https://wiki.archlinux.org/index.php/Games"
+    echo " 1) Action/Adventure"
+    echo " 2) Arcade/Platformer"
+    echo " 3) Dungeon"
+    echo " 4) Emulators"
+    echo " 5) FPS"
+    echo " 6) MMO"
+    echo " 7) Puzzle"
+    echo " 8) RPG"
+    echo " 9) Racing"
+    echo "10) Simulation"
+    echo "11) Strategy"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    FUN+=" b"
+    read_input_options "$FUN"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                #ACTION/ADVENTURE {{{
+                while [ 1 ]
+                do
+                    print_title "ACTION AND ADVENTURE"
+                    echo " 1) $(checkbox_package "astromenace") Astromenace"
+                    echo " 2) $(checkbox_package "opentyrian-hg") OpenTyrian"
+                    echo " 3) $(checkbox_package "mars-shooter") M.A.R.S."
+                    echo " 4) $(checkbox_package "yofrankie") Yo Frankie!"
+                    echo " 5) $(checkbox_package "counter-strike-2d") Counter-Strike 2D"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    ACTION+=" b"
+                    read_input_options "$ACTION"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "astromenace"
+                                ;;
+                            2)
+                                package_install "opentyrian-hg"
+                                ;;
+                            3)
+                                package_install "mars-shooter"
+                                ;;
+                            4)
+                                package_install "yofrankie"
+                                ;;
+                            5)
+                                package_install "counter-strike-2d"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=1
+                ;;
+            2)
+                #ARCADE/PLATFORMER {{{
+                while [ 1 ]
+                do
+                    print_title "ARCADE AND PLATFORMER"
+                    echo " 1) $(checkbox_package "opensonic") Opensonic"
+                    echo " 2) $(checkbox_package "frogatto") Frogatto"
+                    echo " 3) $(checkbox_package "bomberclone") Bomberclone"
+                    echo " 4) $(checkbox_package "goonies") Goonies"
+                    echo " 5) $(checkbox_package "mari0") Mari0"
+                    echo " 6) $(checkbox_package "neverball") Neverball"
+                    echo " 7) $(checkbox_package "smc") Super Mario Chronicles"
+                    echo " 8) $(checkbox_package "xmoto") X-Moto"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    ARCADE+=" b"
+                    read_input_options "$ARCADE"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "opensonic"
+                                ;;
+                            2)
+                                package_install "frogatto"
+                                ;;
+                            3)
+                                package_install "bomberclone"
+                                ;;
+                            4)
+                                package_install "goonies"
+                                ;;
+                            5)
+                                package_install "mari0"
+                                ;;
+                            6)
+                                package_install "neverball"
+                                ;;
+                            7)
+                                package_install "smc"
+                                ;;
+                            8)
+                                package_install "xmoto"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=2
+                ;;
+            3)
+                #DUNGEON {{{
+                while [ 1 ]
+                do
+                    print_title "DUNGEON"
+                    echo " 1) $(checkbox_package "adom") Adom"
+                    echo " 2) $(checkbox_package "tome4") Tales of MajEyal"
+                    echo " 3) $(checkbox_package "lostlabyrinth") Lost Labyrinth"
+                    echo " 4) $(checkbox_package "scourge") S.C.O.U.R.G.E."
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    DUNGEON+=" b"
+                    read_input_options "$DUNGEON"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "adom"
+                                ;;
+                            2)
+                                package_install "tome4"
+                                ;;
+                            3)
+                                package_install "lostlabyrinth"
+                                ;;
+                            4)
+                                package_install "scourge"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=3
+                ;;
+            4)
+                #EMULATORS {{{
+                while [ 1 ]
+                do
+                    print_title "EMULATORS"
+                    echo " 1) $(checkbox_package "bsnes") BSNES"
+                    echo " 2) $(checkbox_package "desmume") Desmume"
+                    echo " 3) $(checkbox_package "dolphin-emu") Dolphin"
+                    echo " 4) $(checkbox_package "epsxe") ePSXe"
+                    echo " 5) $(checkbox_package "project64") Project64"
+                    echo " 6) $(checkbox_package "vba-m-gtk-svn") VisualBoyAdvanced"
+                    echo " 7) $(checkbox_package "wxmupen64plus-hg") wxMupen64Plus"
+                    echo " 8) $(checkbox_package "zsnes") ZSNES"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    EMULATORS+=" b"
+                    read_input_options "$EMULATORS"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "bsnes"
+                                ;;
+                            2)
+                                package_install "desmume-svn"
+                                ;;
+                            3)
+                                package_install "dolphin-emu"
+                                ;;
+                            4)
+                                package_install "epsxe"
+                                ;;
+                            5)
+                                package_install "project64"
+                                ;;
+                            6)
+                                package_install "vba-m-gtk-svn"
+                                ;;
+                            7)
+                                package_install "wxmupen64plus-hg"
+                                package_install "mupen64plus-video-rice-hg"
+                                package_install "mupen64plus-audio-sdl-hg"
+                                package_install "mupen64plus-input-sdl-hg"
+                                package_install "mupen64plus-rsp-hle-hg"
+                                ;;
+                            8)
+                                package_install "zsnes"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=4
+                ;;
+            5)
+                #FPS {{{
+                while [ 1 ]
+                do
+                    print_title "FPS"
+                    echo " 1) $(checkbox_package "alienarena") AlienArena"
+                    echo " 2) $(checkbox_package "warsow") Warsow"
+                    echo " 3) $(checkbox_package "enemy-territory") Wolfenstein: Enemy Territory"
+                    echo " 4) $(checkbox_package "worldofpadman") World of Padman"
+                    echo " 5) $(checkbox_package "xonotic") Xonotic"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    FPS+=" b"
+                    read_input_options "$FPS"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "alienarena"
+                                ;;
+                            2)
+                                package_install "warsow"
+                                ;;
+                            3)
+                                package_install "enemy-territory"
+                                ;;
+                            4)
+                                package_install "worldofpadman"
+                                ;;
+                            5)
+                                package_install "xonotic"
+                                ;;
+
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=5
+                ;;
+            6)
+                #MMO {{{
+                while [ 1 ]
+                do
+                    print_title "MMO"
+                    echo " 1) $(checkbox_package "hon") Heroes of Newerth"
+                    echo " 2) $(checkbox_package "manaplus") ManaPlus"
+                    echo " 3) $(checkbox_package "savage2") Savage II"
+                    echo " 4) $(checkbox_package "spiral-knights") Spiral Knights"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    MMO+=" b"
+                    read_input_options "$MMO"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "hon"
+                                ;;
+                            2)
+                                package_install "manaplus"
+                                ;;
+                            3)
+                                package_install "savage2"
+                                ;;
+                            4)
+                                package_install "spiral-knights"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=6
+                ;;
+            7)
+                #PUZZLE {{{
+                while [ 1 ]
+                do
+                    print_title "PUZZLE"
+                    echo " 1) $(checkbox_package "frozen-bubble") Frozen Bubble"
+                    echo " 2) $(checkbox_package "numptyphysics-svn") Numptyphysics"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    PUZZLE+=" b"
+                    read_input_options "$PUZZLE"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "frozen-bubble"
+                                ;;
+                            2)
+                                package_install "numptyphysics-svn"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=7
+                ;;
+            8)
+                #RPG {{{
+                while [ 1 ]
+                do
+                    print_title "RPG"
+                    echo " 1) $(checkbox_package "ardentryst") Ardentryst"
+                    echo " 2) $(checkbox_package "flare-rpg") Flare"
+                    echo " 3) $(checkbox_package "freedroidrpg") Freedroid RPG"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    RPG+=" b"
+                    read_input_options "$RPG"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "ardentryst"
+                                ;;
+                            2)
+                                package_install "flare-rpg"
+                                ;;
+                            3)
+                                package_install "freedroidrpg"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=8
+                ;;
+            9)
+                #RACING {{{
+                while [ 1 ]
+                do
+                    print_title "RACING"
+                    echo " 1) $(checkbox_package "maniadrive") Maniadrive"
+                    echo " 2) $(checkbox_package "death-rally") Death Rally"
+                    echo " 3) $(checkbox_package "stuntrally") Stuntrally"
+                    echo " 4) $(checkbox_package "supertuxkart") SupertuxKart"
+                    echo " 5) $(checkbox_package "speed-dreams") Speed Dreams"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    RACING+=" b"
+                    read_input_options "$RACING"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "maniadrive"
+                                ;;
+                            2)
+                                package_install "death-rally"
+                                ;;
+                            3)
+                                package_install "stuntrally"
+                                ;;
+                            4)
+                                package_install "supertuxkart"
+                                ;;
+                            5)
+                                package_install "speed-dreams"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=9
+                ;;
+            10)
+                #SIMULATION {{{
+                while [ 1 ]
+                do
+                    print_title "SIMULATION"
+                    echo " 1) $(checkbox_package "simutrans") Simultrans"
+                    echo " 2) $(checkbox_package "corsix-th") Theme Hospital"
+                    echo " 3) $(checkbox_package "openttd") OpenTTD"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    SIMULATION+=" b"
+                    read_input_options "$SIMULATION"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "simutrans"
+                                ;;
+                            2)
+                                package_install "corsix-th"
+                                ;;
+                            3)
+                                package_install "openttd"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=10
+                ;;
+            11)
+                #STRATEGY {{{
+                while [ 1 ]
+                do
+                    print_title "STRATEGY"
+                    echo " 1) $(checkbox_package "0ad") 0ad"
+                    echo " 2) $(checkbox_package "hedgewars") Hedgewars"
+                    echo " 3) $(checkbox_package "megaglest") MegaGlest"
+                    echo " 4) $(checkbox_package "warzone2100") Warzone 2100"
+                    echo " 5) $(checkbox_package "wesnoth") Wesnoth"
+                    echo " 6) $(checkbox_package "zod") Zod"
+                    echo ""
+                    echo " b) BACK"
+                    echo ""
+                    STRATEGY+=" b"
+                    read_input_options "$STRATEGY"
+                    for OPT in ${OPTIONS[@]}; do
+                        case "$OPT" in
+                            1)
+                                package_install "0ad"
+                                ;;
+                            2)
+                                package_install "hedgewars"
+                                ;;
+                            3)
+                                package_install "megaglest"
+                                ;;
+                            4)
+                                package_install "warzone2100"
+                                ;;
+                            5)
+                                package_install "wesnoth"
+                                ;;
+                            6)
+                                package_install "commander-zod"
+                                ;;
+                            "b")
+                                break
+                                ;;
+                            *)
+                                invalid_option
+                                ;;
+                        esac
+                    done
+                elihw
+                done
+                #}}}
+                OPT=11
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#FONTS {{{
+function install_fonts(){
+while [ 1 ]
+do
+    print_title "FONTS - https://wiki.archlinux.org/index.php/Fonts"
+    echo " 1) $(checkbox_package "ttf-dejavu") ttf-dejavu"
+    echo " 2) $(checkbox_package "ttf-google-webfonts") ttf-google-webfonts"
+    echo " 3) $(checkbox_package "ttf-kochi-substitute") ttf-kochi-substitute (Japanese Support)"
+    echo " 4) $(checkbox_package "ttf-liberation") ttf-liberation"
+    echo " 5) $(checkbox_package "ttf-mscorefonts-installer") ttf-ms-fonts"
+    echo " 6) $(checkbox_package "ttf-roboto") ttf-roboto"
+    echo " 7) $(checkbox_package "ttf-vista-fonts") ttf-vista-fonts"
+    echo " 8) $(checkbox_package "ttf-mac-fonts") ttf-mac-fonts"
+    echo ""
+    echo " b) BACK"
+    echo ""
+    FONTS_OPTIONS+=" b"
+    read_input_options "$FONTS_OPTIONS"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                package_install "ttf-dejavu"
+                ;;
+            2)
+                echo -e "\nWARNING: Install time can be > 20min"
+                read_input_text "Are you sure you want to continue?" $GOOGLE_FONTS
+                if [ "$OPTION" = "n" ]; then continue; fi
+                cd && wget http://webupd8.googlecode.com/files/install-google-fonts
+                chmod +x install-google-fonts
+                ./install-google-fonts
+                ;;
+            3)
+                package_install "ttf-kochi-substitute"
+                ;;
+            4)
+                package_install "ttf-liberation"
+                ;;
+            5)
+                package_install "ttf-mscorefonts-installer"
+                ;;
+            6)
+                package_install "ttf-roboto"
+                ;;
+            7)
+                package_install "ttf-vista-fonts"
+                ;;
+            8)
+                package_install "ttf-mac-fonts"
+                ;;
+            "b")
+                break
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+elihw
+done
+}
+#}}}
+#CLEAN ORPHAN PACKAGES {{{
+    function clean_orphan_packages(){
+    print_title "CLEAN ORPHAN PACKAGES"
+    apt-get autoremove --purge -y
+}
+#}}}
+#FINISH {{{
+function finish(){
+    print_title "INSTALL COMPLETED"
+    reboot_now
+    echo "Thanks for using the Archlinux Ultimate Install script by helmuthdu"
+    exit 0
+}
+#}}}
+
+#MAIN {{{
+welcome
+check_root
+language_selector
+system_upgrade
+select_user
+choose_aurhelper
+
+while [ 1 ]
+do
+    print_title "ARCHLINUX ULTIMATE INSTALL - https://github.com/helmuthdu/aui"
+    echo " 1) $(checkbox $BASICSETUP) Basic Setup"
+    echo " 2) $(checkbox $DESKTOPENVIRONMENT) Desktop Environment"
+    echo " 3) $(checkbox $ACCESSORIES) Accessories Apps"
+    echo " 4) $(checkbox $DEVELOPMENT) Development Apps"
+    echo " 5) $(checkbox $OFFICE) Office Apps"
+    echo " 6) $(checkbox $SYSTEM) System Apps"
+    echo " 7) $(checkbox $GRAPHICS) Graphics Apps"
+    echo " 8) $(checkbox $INTERNET) Internet Apps"
+    echo " 9) $(checkbox $AUDIO) Audio Apps"
+    echo "10) $(checkbox $VIDEO) Video Apps"
+    echo "11) $(checkbox $GAMES) Games"
+    echo "12) $(checkbox $LAMP) LAMP"
+    echo "13) $(checkbox $FONTS) Fonts"
+    echo "15) $(checkbox $CLEANPACKAGES) Clean Orphan Packages"
+    echo ""
+    echo " q) Quit"
+    echo ""
+    MAINMENU+=" q"
+    read_input_options "$MAINMENU"
+    for OPT in ${OPTIONS[@]}; do
+        case "$OPT" in
+            1)
+                custom_repositories
+                install_basic_setup
+                install_video_cards
+                install_git_tor
+                install_status
+                sumary "Basic setup installation"
+                pause_function
+                BASICSETUP=1
+                ;;
+            2)
+                if [ $BASICSETUP -eq 0 ]; then
+                    echo -e "\nWARNING: YOU MUST RUN THE BASIC SETUP FIRST"
+                    read_input_text "Are you sure you want to continue?"
+                    if [ "$OPTION" = "n" ]; then continue; fi
+                fi
+                install_desktop_environment
+                DESKTOPENVIRONMENT=1
+                ;;
+            3)
+                install_accessories_apps
+                ACCESSORIES=1
+                ;;
+            4)
+                install_development_apps
+                DEVELOPMENT=1
+                ;;
+            5)
+                install_office_apps
+                OFFICE=1
+                ;;
+            6)
+                install_system_apps
+                SYSTEM=1
+                ;;
+            7)
+                install_graphics_apps
+                GRAPHICS=1
+                ;;
+            8)
+                install_internet_apps
+                INTERNET=1
+                ;;
+            9)
+                install_audio_apps
+                AUDIO=1
+                ;;
+            10)
+                install_video_apps
+                VIDEO=1
+                ;;
+            11)
+                install_games
+                GAMES=1
+                ;;
+            12)
+                install_lamp
+                LAMP=1
+                ;;
+            13)
+                install_fonts
+                FONTS=1
+                ;;
+            14)
+                clean_orphan_packages
+                CLEANPACKAGES=1
+                ;;
+            "q")
+                finish
+                ;;
+            *)
+                invalid_option
+                ;;
+        esac
+    done
+done
+#}}}
