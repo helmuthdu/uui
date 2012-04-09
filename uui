@@ -1695,21 +1695,20 @@ function install_video_apps(){
 while [ 1 ]
 do
     print_title "VIDEO APPS"
-    echo " 1) $(checkbox_package "audience-bzr") Audience"
+    echo " 1) $(checkbox_package "audience") Audience"
     echo " 2) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
     echo " 3) $(checkbox_package "parole") Parole"
     echo " 4) $(checkbox_package "minitube") Minitube"
-    echo " 5) $(checkbox_package "rosa-media-player-bin") Rosa Media Player"
-    echo " 6) $(checkbox_package "smplayer") SMplayer"
-    echo " 7) $(checkbox_package "vlc") VLC"
-    echo " 8) $(checkbox_package "xbmc") XBMC"
-    echo " 9) $(checkbox_package "arista-transcoder") Arista"
-    echo "10) $(checkbox_package "transmageddon") Transmageddon"
-    echo "11) $(checkbox_package "kdenlive") Kdenlive"
-    echo "12) $(checkbox_package "openshot") Openshot"
-    echo "13) $(checkbox_package "pitivi") Pitivi"
-    echo "14) $(checkbox_package "kazam-bzr") Kazam"
-    echo "15) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
+    echo " 5) $(checkbox_package "smplayer") SMplayer"
+    echo " 6) $(checkbox_package "vlc") VLC"
+    echo " 7) $(checkbox_package "xbmc") XBMC"
+    echo " 8) $(checkbox_package "arista") Arista"
+    echo " 9) $(checkbox_package "transmageddon") Transmageddon"
+    echo "10) $(checkbox_package "kdenlive") Kdenlive"
+    echo "11) $(checkbox_package "openshot") Openshot"
+    echo "12) $(checkbox_package "pitivi") Pitivi"
+    echo "13) $(checkbox_package "kazam") Kazam"
+    echo "14) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1718,7 +1717,7 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "audience-bzr"
+                package_install "audience"
                 ;;
             2)
                 package_install "gnome-mplayer"
@@ -1730,45 +1729,38 @@ do
                 package_install "minitube"
                 ;;
             5)
-                package_install "rosa-media-player-bin"
-                ;;
-            6)
                 package_install "smplayer smplayer-themes"
                 ;;
-            7)
+            6)
                 package_install "vlc"
-                if [ "$KDE" -eq 1 ]; then
-                    package_install "phonon-vlc"
-                fi
                 ;;
-            8)
+            7)
                 package_install "xbmc"
                 ;;
-            9)
-                package_install "arista-transcoder"
+            8)
+                package_install "arista"
                 ;;
-            10)
+            9)
                 package_install "transmageddon"
                 ;;
-            11)
+            10)
                 package_install "kdenlive"
                 ;;
-            12)
+            11)
                 package_install "openshot"
                 ;;
-            13)
+            12)
                 package_install "pitivi"
                 ;;
-            14)
-                package_install "python-rsvg"
-                package_install "kazam-bzr"
+            13)
+                package_install "kazam"
                 ;;
-            15)
-                package_install "libquicktime libdvdread libdvdnav libdvdcss cdrdao"
+            14)
+                package_install "libdvdread4 libdvdnav4 libquicktime2 libdvdcss2 cdrdao"
                 if [ "$ARCHI" = "i686" ]; then
-                    package_install "codecs"
+                    package_install "w32codecs"
                 else
-                    package_install "codecs64"
+                    package_install "w64codecs"
                 fi
                 ;;
             "b")
