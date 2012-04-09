@@ -621,7 +621,7 @@ function install_desktop_environment(){
             #GNOME {{{
             print_title "GNOME"
             apt-get install -y gedit-plugins gnome-tweak-tool
-            package_install "nautilus-open-terminal"
+            package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
             #GNOME CUSTOMIZATION {{{
             while [ 1 ]
             do
@@ -1038,7 +1038,7 @@ while [ 1 ]
 do
     print_title "ACCESSORIES APPS"
     echo " 1) $(checkbox_package "cairo-dock-bzr") Cairo Dock"
-    echo " 2) $(checkbox_package "conky") Conky + CONKY-colors"
+    echo " 2) $(checkbox_package "conky") Conky"
     echo " 3) $(checkbox_package "deepin-scrot-git") Deepin Scrot"
     echo " 4) $(checkbox_package "dockbarx") Dockbarx"
     echo " 5) $(checkbox_package "docky") Docky"
@@ -1061,7 +1061,7 @@ do
                 package_install "cairo-dock cairo-dock-plugins"
                 ;;
             2)
-                package_install "conky-all"
+                package_install "toilet figlet cowsay conky-all curl lm-sensors"
                 sensors-detect
                 ;;
             3)
@@ -1632,7 +1632,7 @@ do
                 package_install "musique"
                 ;;
             10)
-                if ! check_repository "jdownloader"; then
+                if ! check_repository "novula"; then
                     add-apt-repository -y ppa:nuvola-player-builders/stable
                     apt-get update
                 fi
@@ -1642,7 +1642,13 @@ do
                 package_install "rhythmbox"
                 ;;
             12)
+                if ! check_repository "spotify"; then
+                    echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify-stable.list
+                    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4E9CFF4E
+                    apt-get update
+                fi
                 package_install "spotify"
+                #su -l $USERNAME --command="mkdir -p ~/.cache/indicators/sound/album-art-cache"
                 ;;
             13)
                 package_install "soundconverter"
