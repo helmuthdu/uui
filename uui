@@ -1126,7 +1126,7 @@ do
     echo " 6) $(checkbox_package "geany") Geany"
     echo " 7) $(checkbox_package "intellij-idea-community-edition") IntelliJ IDEA"
     echo " 8) $(checkbox_package "netbeans") Netbeans"
-    echo " 9) $(checkbox_package "jdk") Oracle Java"
+    echo " 9) $(checkbox_package "openjdk-7-jdk") Java"
     echo "10) $(checkbox_package "qtcreator") QT Creator"
     echo "11) $(checkbox_package "sublime-text") Sublime Text 2"
     echo "12) $(checkbox_package "gdb") Debugger Tools [Valgrind, Gdb, Splint, Tidyhtml, Pyflakes, Jsl]"
@@ -1140,7 +1140,18 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "aptana-studio"
+                if [ "$ARCHI" = "i686" ]; then
+                    wget -O xulrunner.deb http://launchpadlibrarian.net/70321863/xulrunner-1.9.2_1.9.2.17%2Bbuild3%2Bnobinonly-0ubuntu1_i386.deb
+                else
+                    wget -O xulrunner.deb http://launchpadlibrarian.net/70321329/xulrunner-1.9.2_1.9.2.17%2Bbuild3%2Bnobinonly-0ubuntu1_amd64.deb
+                fi
+                dpkg -i xulrunner.deb
+                rm xulrunner.deb
+                wget http://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.0.9.201202141038/linux/Aptana_Studio_3_Setup_Linux_x86_3.0.9.zip
+                unzip Aptana_Studio_3_Setup_Linux_x86_3.0.9.zip -d /opt
+                mv /opt/Aptana\ Studio\ 3 /opt/aptana-studio-3
+                wget http://www.samclarke.com/wp-content/uploads/2011/11/AptanaStudio.desktop
+                mv AptanaStudio.desktop /usr/share/applications/AptanaStudio.desktop
                 ;;
             2)
                 package_install "bluefish"
@@ -1222,22 +1233,24 @@ do
                 package_install "netbeans"
                 ;;
             9)
-                apt-get --remove --purge openjdk-7-jdk
-                apt-get --remove --purge openjdk-7-jre
-                package_install "jdk"
+                package_install "openjdk-7-jdk openjdk-7-jre"
                 ;;
             10)
-                package_install "qtcreator qt-doc"
+                package_install "qtcreator qt4-doc qt4-demos"
                 mkdir -p /home/$USERNAME/.config/Nokia/qtcreator/styles
                 wget http://angrycoding.googlecode.com/svn/branches/qt-creator-monokai-theme/monokai.xml
                 mv monokai.xml /home/$USERNAME/.config/Nokia/qtcreator/styles/
                 chown -R $USERNAME:users /home/$USERNAME/.config
                 ;;
             11)
-                package_install "sublime-text"
+                if ! check_repository "sublime-text"; then
+                    add-apt-repository -y ppa:webupd8team/sublime-text-2
+                    apt-get update
+                fi
+                package_install "sublime-text-2-beta"
                 ;;
             12)
-                package_install "valgrind gdb splint tidyhtml pyflakes"
+                package_install "valgrind gdb splint tidy pyflakes"
                 package_install "nodejs npm"
                 sudo npm install -g jslint
                 ;;
