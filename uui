@@ -1490,7 +1490,16 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "nautilus-dropbox"
+                if [ "$GNOME" -eq 1 ]; then
+                    package_install "nautilus-dropbox"
+                else
+                    if [ "$ARCHI" = "i686" ]; then
+                        su -l $USERNAME --command="cd ~ && wget -O - "http://www.dropbox.com/download?plat=lnx.x86" | tar xzf -"
+                    else
+                        su -l $USERNAME --command="cd ~ && wget -O - "http://www.dropbox.com/download?plat=lnx.x86_64" | tar xzf -"
+                    fi
+                    su -l $USERNAME --command="~/.dropbox-dist/dropboxd"
+                fi
                 ;;
             2)
                 package_install "chromium flashplugin-installer"
