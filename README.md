@@ -24,21 +24,13 @@ You can try it first with a `virtualbox`
 
 ## What does the script do?
 
-- Automatic configure rc.conf
 - Install additional repositories
-- Configure rankmirror
 - System upgrade
 - Create and configure new user
-- Install and configure sudo
 - Configure pacman package signing
-- Install an AUR Helper [yaourt, packer]
 - Install base system
-- Install Xorg
 - Install GPU Drivers
-- Install CUPS
-- Install Additional wireless/bluetooth firmwares
 - Ensuring access to GIT through a firewall
-- Install a Desktop Environment [GNOME, KDE, XFCE, LXDE, OpenBox]
 - Install Developement tools [Vim, Emacs, Eclipse...]
 - Install Office apps [LibreOffice, GNOME-Office, Latex...]
 - Install System tools [Wine, Virtualbox, Grsync, Htop]
