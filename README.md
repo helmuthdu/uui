@@ -1,4 +1,4 @@
-# Archlinux Ultimate Install Script
+# Ubuntu Ultimate Install Script
 
 Install and configure archlinux has never been easier!
 
@@ -6,7 +6,7 @@ You can try it first with a `virtualbox`
 
 ## Prerequisites
 
-- You need to have Archlinux (`base` + `base_devel`) already installed and rebooted
+- You need to have Ubuntu already installed and rebooted
 - Git
 - A working internet connection
 - Logged in as 'root'
@@ -14,7 +14,7 @@ You can try it first with a `virtualbox`
 ## How to use
 
 ### With git
-- Install git: `pacman -Sy git`
+- Install git: `apt-get install git`
 - get the script: `git clone git://github.com/helmuthdu/aui`
 - run the script: `cd aui && ./aui`
 
