@@ -290,7 +290,7 @@ function language_selector(){
 #CUSTOM REPOSITORIES {{{
 function custom_repositories(){
     function repository_install(){
-        echo -e "\n$1 repository added into pacman.conf file"
+        echo -e "\n$1 repository added into sources.list.d direcotry"
         pause_function
     }
     print_title "CUSTOM REPOSITORIES"
@@ -300,14 +300,15 @@ function custom_repositories(){
             #CUSTOM REPOSITORIES {{{
             while [ 1 ]
             do
-                print_title "CUSTOM REPOSITORIES - https://wiki.archlinux.org/index.php/Unofficial_User_Repositories"
+                print_title "CUSTOM REPOSITORIES"
                 echo " 1) Elementary"
-                echo " 2) GNOME 3"
-                echo " 3) Jdownloader"
-                echo " 4) Medibuntu"
-                echo " 5) Themes/Icons"
-                echo " 6) Ubuntu-tweak"
-                echo " 7) Webupd8"
+                echo " 2) Globus Preview"
+                echo " 3) GNOME 3"
+                echo " 4) Jdownloader"
+                echo " 5) Medibuntu"
+                echo " 6) Themes/Icons"
+                echo " 7) Ubuntu-tweak"
+                echo " 8) Webupd8"
                 echo ""
                 echo " a) \"Add Custom\""
                 echo ""
@@ -323,30 +324,34 @@ function custom_repositories(){
                             repository_install "elementary"
                             ;;
                         2)
+                            add-apt-repository -y ppa:gloobus-dev/gloobus-preview
+                            repository_install "Gloobus Preview"
+                            ;;
+                        3)
                             add-apt-repository -y ppa:webupd8team/gnome3
                             repository_install "GNOME 3"
                             ;;
-                        3)
+                        4)
                             add-apt-repository -y ppa:jd-team/jdownloader
                             repository_install "Jdownloader"
                             ;;
-                            4)
+                        5)
                             wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list
                             apt-get update
                             apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring
                             apt-get update
                             repository_install "Medibuntu"
                             ;;
-                        5)
+                        6)
                             add-apt-repository -y ppa:tiheum/equinox
                             add-apt-repository -y ppa:webupd8team/themes
                             repository_install "Themes & Icons"
                             ;;
-                        6)
+                        7)
                             add-apt-repository -y ppa:ubuntu-tweak-testing/ppa
                             repository_install "Ubuntu-tweak"
                             ;;
-                        7)
+                        8)
                             add-apt-repository -y ppa:nilarimogard/webupd8
                             repository_install "Webupd8"
                             ;;
@@ -632,6 +637,7 @@ function install_desktop_environment(){
                 echo " 4) $(checkbox_package "gnome-shell-theme-eos gnome-shell-theme-dark-shine gnome-shell-theme-faience gnome-shell-theme-nord") GnomeShell Themes [eOS, Nord, Faience, Dark Shine]"
                 echo " 5) $(checkbox_package "gnome-activity-journal") Gnome Activity Journal "
                 echo " 6) $(checkbox_package "gnome-packagekit") Packagekit"
+                echo " 7) $(checkbox_package "gloobus-preview") Gloobus Preview"
                 echo ""
                 echo " d) DONE"
                 echo ""
@@ -790,7 +796,14 @@ function install_desktop_environment(){
                             package_install "gnome-activity-journal"
                             ;;
                         6)
-                            package_install "gnome-packagekit gnome-settings-daemon-updates"
+                            package_install "gnome-packagekit"
+                            ;;
+                        7)
+                            if ! check_repository "gloobus-preview"; then
+                                add-apt-repository -y ppa:gloobus-dev/gloobus-preview
+                                apt-get update
+                            fi
+                            package_install "gloobus-preview gloobus-sushi unoconv"
                             ;;
                         "d")
                             break
@@ -1704,20 +1717,19 @@ function install_video_apps(){
 while [ 1 ]
 do
     print_title "VIDEO APPS"
-    echo " 1) $(checkbox_package "audience") Audience"
-    echo " 2) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
-    echo " 3) $(checkbox_package "parole") Parole"
-    echo " 4) $(checkbox_package "minitube") Minitube"
-    echo " 5) $(checkbox_package "smplayer") SMplayer"
-    echo " 6) $(checkbox_package "vlc") VLC"
-    echo " 7) $(checkbox_package "xbmc") XBMC"
-    echo " 8) $(checkbox_package "arista") Arista"
-    echo " 9) $(checkbox_package "transmageddon") Transmageddon"
-    echo "10) $(checkbox_package "kdenlive") Kdenlive"
-    echo "11) $(checkbox_package "openshot") Openshot"
-    echo "12) $(checkbox_package "pitivi") Pitivi"
-    echo "13) $(checkbox_package "kazam") Kazam"
-    echo "14) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
+    echo " 1) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
+    echo " 2) $(checkbox_package "parole") Parole"
+    echo " 3) $(checkbox_package "minitube") Minitube"
+    echo " 4) $(checkbox_package "smplayer") SMplayer"
+    echo " 5) $(checkbox_package "vlc") VLC"
+    echo " 6) $(checkbox_package "xbmc") XBMC"
+    echo " 7) $(checkbox_package "arista") Arista"
+    echo " 8) $(checkbox_package "transmageddon") Transmageddon"
+    echo " 9) $(checkbox_package "kdenlive") Kdenlive"
+    echo "10) $(checkbox_package "openshot") Openshot"
+    echo "11) $(checkbox_package "pitivi") Pitivi"
+    echo "12) $(checkbox_package "kazam") Kazam"
+    echo "13) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1726,45 +1738,42 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "audience"
-                ;;
-            2)
                 package_install "gnome-mplayer"
                 ;;
-            3)
+            2)
                 package_install "parole"
                 ;;
-            4)
+            3)
                 package_install "minitube"
                 ;;
-            5)
+            4)
                 package_install "smplayer smplayer-themes"
                 ;;
-            6)
+            5)
                 package_install "vlc"
                 ;;
-            7)
+            6)
                 package_install "xbmc"
                 ;;
-            8)
+            7)
                 package_install "arista"
                 ;;
-            9)
+            8)
                 package_install "transmageddon"
                 ;;
-            10)
+            9)
                 package_install "kdenlive"
                 ;;
-            11)
+            10)
                 package_install "openshot"
                 ;;
-            12)
+            11)
                 package_install "pitivi"
                 ;;
-            13)
+            12)
                 package_install "kazam"
                 ;;
-            14)
+            13)
                 package_install "libdvdread4 libdvdnav4 libquicktime2 libdvdcss2 cdrdao"
                 if [ "$ARCHI" = "i686" ]; then
                     package_install "w32codecs"
@@ -1788,7 +1797,7 @@ done
 function install_games(){
 while [ 1 ]
 do
-    print_title "GAMES - https://wiki.archlinux.org/index.php/Games"
+    print_title "GAMES"
     echo " 1) Action/Adventure"
     echo " 2) Arcade/Platformer"
     echo " 3) Dungeon"
