@@ -210,6 +210,7 @@ USE_SCRIPT=0
     #11) Shutter
     #12) Synapse
     #13) Terminator
+    #14) Zim
     ACCESSORIES_OPTIONS="3 7 9 13"
 #}}}
 #DEVELOPEMENT {{{
@@ -247,11 +248,11 @@ USE_SCRIPT=0
     # 3) Latex + Texmaker
     # 4) CHM Viewer
     # 5) GCStar
-    # 6) Wunderlist
-    # 7) Xmind
-    # 8) Zathura
-    # 9) Impressive
-    #10) OCRFeeder
+    # 6) Impressive
+    # 7) Nitrotasks
+    # 8) OCRFeeder
+    # 9) Xmind
+    #10) Zathura
     OFFICE_OPTIONS="1 8 9"
 #}}}
 #SYSTEM TOOLS {{{

@@ -1,7 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------
 #Created by helmuthdu mailto: helmuthdu[at]gmail[dot]com
-#Inspired by Andreas Freitag, aka nexxx script
 #-------------------------------------------------------------------------------
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -16,7 +15,6 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-------------------------------------------------------------------------------
-# Run this script after your first boot with archlinux (as root)
 
 source uuiscript
 
@@ -1063,6 +1061,7 @@ do
     echo "11) $(checkbox_package "shutter") Shutter"
     echo "12) $(checkbox_package "synapse") Synapse"
     echo "13) $(checkbox_package "terminator") Terminator"
+    echo "14) $(checkbox_package "zim") Zim"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1113,6 +1112,9 @@ do
                 ;;
             13)
                 package_install "terminator"
+                ;;
+            14)
+                package_install "zim"
                 ;;
             "b")
                 break
@@ -1299,11 +1301,11 @@ do
     echo " 3) $(checkbox_package "texlive-core") Latex + Texmaker"
     echo " 4) $(if [ "$KDE" -eq 1 ]; then  echo "$(checkbox_package "kchmviewer") Kchmviewer"; else echo "$(checkbox_package "chmsee") Chmsee"; fi)"
     echo " 5) $(checkbox_package "gcstar") GCStar"
-    echo " 6) $(checkbox_package "wunderlist") Wunderlist"
-    echo " 7) $(checkbox_package "xmind") Xmind"
-    echo " 8) $(checkbox_package "zathura") Zathura"
-    echo " 9) $(checkbox_package "impressive") Impressive"
-    echo "10) $(checkbox_package "ocrfeeder") OCRFeeder"
+    echo " 6) $(checkbox_package "impressive") Impressive"
+    echo " 7) $(checkbox_package "nitrotasks") Nitrotasks"
+    echo " 8) $(checkbox_package "ocrfeeder") OCRFeeder"
+    echo " 9) $(checkbox_package "xmind") Xmind"
+    echo "10) $(checkbox_package "zathura") Zathura"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1346,20 +1348,20 @@ do
                 package_install "gcstar"
                 ;;
             6)
-                package_install "wunderlist"
-                ;;
-            7)
-                package_install "xmind"
-                ;;
-            8)
-                package_install "zathura"
-                ;;
-            9)
                 package_install "impressive"
                 ;;
-            10)
+            7)
+                package_install "nitrotasks"
+                ;;
+            8)
                 package_install "ocrfeeder tesseract-ocr gocr"
                 package_install "aspell-$LANGUAGE_AS"
+                ;;
+            9)
+                package_install "xmind"
+                ;;
+            10)
+                package_install "zathura"
                 ;;
             "b")
                 break
@@ -1443,10 +1445,14 @@ do
                 package_install "blender"
                 ;;
             2)
+                if ! check_repository "gimp"; then
+                    add-apt-repository -y ppa:otto-kesselgulasch/gimp
+                    apt-get update
+                fi
                 package_install "gimp"
                 ;;
             3)
-                package_install "gimp-resynthesizer gimp-plugin-registry"
+                package_install "gimp-resynthesizer"
                 ;;
             4)
                 package_install "gthumb"
@@ -1717,19 +1723,21 @@ function install_video_apps(){
 while [ 1 ]
 do
     print_title "VIDEO APPS"
-    echo " 1) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
-    echo " 2) $(checkbox_package "parole") Parole"
-    echo " 3) $(checkbox_package "minitube") Minitube"
-    echo " 4) $(checkbox_package "smplayer") SMplayer"
-    echo " 5) $(checkbox_package "vlc") VLC"
-    echo " 6) $(checkbox_package "xbmc") XBMC"
-    echo " 7) $(checkbox_package "arista") Arista"
-    echo " 8) $(checkbox_package "transmageddon") Transmageddon"
-    echo " 9) $(checkbox_package "kdenlive") Kdenlive"
-    echo "10) $(checkbox_package "openshot") Openshot"
-    echo "11) $(checkbox_package "pitivi") Pitivi"
-    echo "12) $(checkbox_package "kazam") Kazam"
-    echo "13) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
+    echo " 1) $(checkbox_package "audience") Audience"
+    echo " 2) $(checkbox_package "gnome-mplayer") Gnome Mplayer"
+    echo " 3) $(checkbox_package "parole") Parole"
+    echo " 4) $(checkbox_package "minitube") Minitube"
+    echo " 5) $(checkbox_package "minitube") Miro"
+    echo " 6) $(checkbox_package "smplayer") SMplayer"
+    echo " 7) $(checkbox_package "vlc") VLC"
+    echo " 8) $(checkbox_package "xbmc") XBMC"
+    echo " 9) $(checkbox_package "arista") Arista"
+    echo "10) $(checkbox_package "transmageddon") Transmageddon"
+    echo "11) $(checkbox_package "kdenlive") Kdenlive"
+    echo "12) $(checkbox_package "openshot") Openshot"
+    echo "13) $(checkbox_package "pitivi") Pitivi"
+    echo "14) $(checkbox_package "kazam") Kazam"
+    echo "15) $(if [ "$ARCHI" = "i686" ]; then echo "$(checkbox_package "codecs")"; else echo "$(checkbox_package "codecs64")"; fi) Codecs"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1738,42 +1746,54 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "gnome-mplayer"
+                if ! check_repository "audience"; then
+                    sudo add-apt-repository -y ppa:elementary-os/testing
+                    sudo add-apt-repository -y ppa:vala-team/ppa
+                    sudo add-apt-repository -y ppa:audience-members/ppa
+                    apt-get update
+                fi
+                package_install "audience"
                 ;;
             2)
-                package_install "parole"
+                package_install "gnome-mplayer"
                 ;;
             3)
-                package_install "minitube"
+                package_install "parole"
                 ;;
             4)
-                package_install "smplayer smplayer-themes"
+                package_install "minitube"
                 ;;
             5)
-                package_install "vlc"
+                package_install "miro"
                 ;;
             6)
-                package_install "xbmc"
+                package_install "smplayer smplayer-themes"
                 ;;
             7)
-                package_install "arista"
+                package_install "vlc"
                 ;;
             8)
-                package_install "transmageddon"
+                package_install "xbmc"
                 ;;
             9)
-                package_install "kdenlive"
+                package_install "arista"
                 ;;
             10)
-                package_install "openshot"
+                package_install "transmageddon"
                 ;;
             11)
-                package_install "pitivi"
+                package_install "kdenlive"
                 ;;
             12)
-                package_install "kazam"
+                package_install "openshot"
                 ;;
             13)
+                package_install "pitivi"
+                ;;
+            14)
+                package_install "kazam"
+                ;;
+            15)
                 package_install "libdvdread4 libdvdnav4 libquicktime2 libdvdcss2 cdrdao"
                 if [ "$ARCHI" = "i686" ]; then
                     package_install "w32codecs"
@@ -2327,12 +2347,11 @@ do
     print_title "FONTS - https://wiki.archlinux.org/index.php/Fonts"
     echo " 1) $(checkbox_package "ttf-dejavu") ttf-dejavu"
     echo " 2) $(checkbox_package "ttf-google-webfonts") ttf-google-webfonts"
-    echo " 3) $(checkbox_package "ttf-kochi-substitute") ttf-kochi-substitute (Japanese Support)"
-    echo " 4) $(checkbox_package "ttf-liberation") ttf-liberation"
-    echo " 5) $(checkbox_package "ttf-mscorefonts-installer") ttf-ms-fonts"
-    echo " 6) $(checkbox_package "ttf-roboto") ttf-roboto"
-    echo " 7) $(checkbox_package "ttf-vista-fonts") ttf-vista-fonts"
-    echo " 8) $(checkbox_package "ttf-mac-fonts") ttf-mac-fonts"
+    echo " 3) $(checkbox_package "ttf-liberation") ttf-liberation"
+    echo " 4) $(checkbox_package "ttf-mscorefonts-installer") ttf-ms-fonts"
+    echo " 5) $(checkbox_package "ttf-roboto") ttf-roboto"
+    echo " 6) $(checkbox_package "ttf-vista-fonts") ttf-vista-fonts"
+    echo " 7) $(checkbox_package "ttf-mac-fonts") ttf-mac-fonts"
     echo ""
     echo " b) BACK"
     echo ""
@@ -2352,21 +2371,18 @@ do
                 ./install-google-fonts
                 ;;
             3)
-                package_install "ttf-kochi-substitute"
-                ;;
-            4)
                 package_install "ttf-liberation"
                 ;;
-            5)
+            4)
                 package_install "ttf-mscorefonts-installer"
                 ;;
-            6)
+            5)
                 package_install "ttf-roboto"
                 ;;
-            7)
+            6)
                 package_install "ttf-vista-fonts"
                 ;;
-            8)
+            7)
                 package_install "ttf-mac-fonts"
                 ;;
             "b")
@@ -2391,7 +2407,7 @@ done
 function finish(){
     print_title "INSTALL COMPLETED"
     reboot_now
-    echo "Thanks for using the Archlinux Ultimate Install script by helmuthdu"
+    echo "Thanks for using the Ubuntu Ultimate Install script by helmuthdu"
     exit 0
 }
 #}}}
