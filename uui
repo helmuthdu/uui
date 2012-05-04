@@ -597,6 +597,10 @@ function install_desktop_environment(){
                         package_install "faience-icon-theme"
                         ;;
                     4)
+                        if ! check_repository "elementary"; then
+                            add-apt-repository -y ppa:elementary-os/daily
+                            apt-get update
+                        fi
                         package_install "elementary-icon-theme"
                         ;;
                     "b")
@@ -634,8 +638,8 @@ function install_desktop_environment(){
                 echo " 3) $(checkbox_package "gpaste gnome-shell-extension-gtile-git gnome-shell-extension-mediaplayer-git gnome-shell-extension-noa11y-git gnome-shell-extension-pomodoro gnome-shell-extension-user-theme gnome-shell-extension-weather-git gnome-shell-system-monitor-applet-git") GnomeShell Extensions"
                 echo " 4) $(checkbox_package "gnome-shell-theme-eos gnome-shell-theme-dark-shine gnome-shell-theme-faience gnome-shell-theme-nord") GnomeShell Themes [eOS, Nord, Faience, Dark Shine]"
                 echo " 5) $(checkbox_package "gnome-activity-journal") Gnome Activity Journal "
-                echo " 6) $(checkbox_package "gnome-packagekit") Packagekit"
-                echo " 7) $(checkbox_package "gloobus-preview") Gloobus Preview"
+                echo " 6) $(checkbox_package "gloobus-preview") Gloobus Preview"
+                echo " 7) $(checkbox_package "ubuntu-tweak") Ubuntu-tweak"
                 echo ""
                 echo " d) DONE"
                 echo ""
@@ -649,14 +653,21 @@ function install_desktop_environment(){
                             ;;
                         2)
                             #THEMES {{{
+                            if ! check_repository "webupd8team"; then
+                                add-apt-repository -y ppa:webupd8team/themes
+                                apt-get update
+                            fi
+                            if ! check_repository "elementary"; then
+                                add-apt-repository -y ppa:elementary-os/daily
+                                apt-get update
+                            fi
                             while [ 1 ]
                             do
                                 print_title "GNOME THEMES"
-                                echo " 1) $(checkbox_package "gtk-theme-aldabra") Aldabra"
-                                echo " 2) $(checkbox_package "gtk-theme-boomerang") Boomerang"
-                                echo " 3) $(checkbox_package "egtk") eGTK"
-                                echo " 4) $(checkbox_package "orion-gtk-theme") Orion"
-                                echo " 5) $(checkbox_package "zukitwo-theme-all") Zukitwo"
+                                echo " 1) $(checkbox_package "egtk") eGTK"
+                                echo " 2) $(checkbox_package "holo-theme") Holo"
+                                echo " 3) $(checkbox_package "zukini-theme") Zukini"
+                                echo " 4) $(checkbox_package "zukitwo-gtk-theme zukitwo-dark-gtk-theme") Zukitwo"
                                 echo ""
                                 echo " b) BACK"
                                 echo ""
@@ -665,19 +676,16 @@ function install_desktop_environment(){
                                 for OPT in ${OPTIONS[@]}; do
                                     case "$OPT" in
                                         1)
-                                            package_install "gtk-theme-aldabra"
-                                            ;;
-                                        2)
-                                            package_install "gtk-theme-boomerang"
-                                            ;;
-                                        3)
                                             package_install "egtk"
                                             ;;
-                                        4)
-                                            package_install "orion-gtk-theme"
+                                        2)
+                                            package_install "holo-theme"
                                             ;;
-                                        5)
-                                            package_install "zukitwo-theme-all"
+                                        3)
+                                            package_install "zukini-theme"
+                                            ;;
+                                        4)
+                                            package_install "zukitwo-gtk-theme zukitwo-dark-gtk-theme"
                                             ;;
                                         "b")
                                             break
@@ -794,14 +802,18 @@ function install_desktop_environment(){
                             package_install "gnome-activity-journal"
                             ;;
                         6)
-                            package_install "gnome-packagekit"
-                            ;;
-                        7)
                             if ! check_repository "gloobus-preview"; then
                                 add-apt-repository -y ppa:gloobus-dev/gloobus-preview
                                 apt-get update
                             fi
                             package_install "gloobus-preview gloobus-sushi unoconv"
+                            ;;
+                        7)
+                            if ! check_repository "tualatrix"; then
+                                add-apt-repository -y ppa:tualatrix/ppa
+                                apt-get update
+                            fi
+                            package_install "ubuntu-tweak"
                             ;;
                         "d")
                             break
