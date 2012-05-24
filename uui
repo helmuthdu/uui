@@ -472,16 +472,6 @@ function select_user(){
                     2)
                         # VIM
                         apt-get install -y vim ctags ack
-                        if ! check_package "discount" ; then
-                            su -l $USERNAME --command="
-                                wget http://aur.archlinux.org/packages/discount/discount.tar.gz;
-                                tar zxvf discount.tar.gz;
-                                cd discount;
-                                makepkg -si --noconfirm;
-                                cd ..;
-                                rm -fr discount*
-                            "
-                        fi
                         # VIMRC
                         git clone git://github.com/helmuthdu/vim
                         mv vim /home/$USERNAME/.vim
@@ -1481,7 +1471,7 @@ do
                 package_install "meld"
                 ;;
             14)
-                if [[ $GNOME -eq 1 ]]; then
+                if ! check_package "nautilus" ; then
                     package_install "rabbitvcs-nautilus rabbitvcs-gedit"
                 else
                     package_install "rabbitvcs-cli"
