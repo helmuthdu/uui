@@ -643,10 +643,11 @@ function install_desktop_environment(){
         while [[ 1 ]]
         do
             print_title "GTK2/GTK3 THEMES"
-            echo " 1) $(menu_item "elementary-theme" "eGTK")"
-            echo " 2) $(menu_item "holo-theme" "Holo")"
-            echo " 3) $(menu_item "zukini-theme" "Zukini")"
-            echo " 4) $(menu_item "zukitwo-gtk-theme" "Zukitwo")"
+            echo " 1) $(menu_item "bluebird-gtk-theme" "Bluebird")"
+            echo " 2) $(menu_item "elementary-theme" "eGTK")"
+            echo " 3) $(menu_item "holo-theme" "Holo")"
+            echo " 4) $(menu_item "zukini-theme" "Zukini")"
+            echo " 5) $(menu_item "zukitwo-gtk-theme" "Zukitwo")"
             echo ""
             echo " b) BACK"
             echo ""
@@ -655,15 +656,18 @@ function install_desktop_environment(){
             for OPT in ${OPTIONS[@]}; do
                 case "$OPT" in
                     1)
-                        package_install "elementary-theme"
+                        package_install "bluebird-gtk-theme"
                         ;;
                     2)
-                        package_install "holo-theme"
+                        package_install "elementary-theme"
                         ;;
                     3)
-                        package_install "zukini-theme"
+                        package_install "holo-theme"
                         ;;
                     4)
+                        package_install "zukini-theme"
+                        ;;
+                    5)
                         package_install "zukitwo-gtk-theme"
                         ;;
                     "b")
