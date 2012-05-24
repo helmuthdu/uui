@@ -1398,16 +1398,18 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                package_install "libjpeg62 libwebkitgtk-1.0-0 git-core"
                 if ! check_repository "java"; then
                     add-apt-repository -y ppa:webupd8team/java
                     apt-get update
                 fi
-                sudo apt-get install oracle-java7-installer
-                wget https://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.1.2.201205041324/linux/Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip
-                unzip Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip -d /opt
-                wget http://www.samclarke.com/wp-content/uploads/2012/04/AptanaStudio3.desktop
-                mv AptanaStudio3.desktop /usr/share/applications/AptanaStudio3.desktop
+                package_install "oracle-java7-installer"
+                package_install "libjpeg62 libwebkitgtk-1.0-0 git-core"
+                if [[ ! -d /opt/Aptana_Studio_3 ]]; then
+                    wget https://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.1.2.201205041324/linux/Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip
+                    unzip Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip -d /opt
+                    wget http://www.samclarke.com/wp-content/uploads/2012/04/AptanaStudio3.desktop
+                    mv AptanaStudio3.desktop /usr/share/applications/AptanaStudio3.desktop
+                fi
                 ;;
             2)
                 package_install "bluefish"
@@ -1471,7 +1473,7 @@ do
                 package_install "meld"
                 ;;
             14)
-                if ! check_package "nautilus" ; then
+                if check_package "nautilus" ; then
                     package_install "rabbitvcs-nautilus rabbitvcs-gedit"
                 else
                     package_install "rabbitvcs-cli"
