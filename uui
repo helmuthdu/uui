@@ -450,7 +450,7 @@ function select_user(){
         passwd $USERNAME
         cp /etc/skel/.* /home/$USERNAME/
         #BASHRC {{{
-            print_title "BASHRC - https://wiki.archlinux.org/index.php/Bashrc"
+            print_title "BASHRC"
             apt-get install -y git
             git clone git://github.com/helmuthdu/dotfiles
             cp dotfiles/.* ~
@@ -500,7 +500,7 @@ function select_user(){
             chown -R $USERNAME:users /home/$USERNAME/.*
         #}}}
     } #}}}
-    print_title "SELECT USER ACCOUNT - https://wiki.archlinux.org/index.php/Users_and_Groups"
+    print_title "SELECT USER ACCOUNT"
     users=(`cat /etc/passwd | ls "/home" | sed 's/\///' | cut -d: -f1`);
     PS3="$prompt1"
     echo "Avaliable Users:"
@@ -568,7 +568,7 @@ function install_video_cards(){
 #}}}
 #GIT ACCESS THRU A FIREWALL {{{
 function install_git_tor(){
-    print_title "GIT-TOR - https://wiki.archlinux.org/index.php/Tor"
+    print_title "GIT-TOR"
     read_input_text "Ensuring access to GIT through a firewall (bypass college firewall)" $GITTOR
     case "$OPTION" in
         "y")
@@ -693,19 +693,14 @@ function install_desktop_environment(){
     case "$OPTION" in
         1)
             #CINNAMON {{{
-            print_title "CINNAMON - https://wiki.archlinux.org/index.php/Cinnamon"
+            if ! check_repository "cinnamon"; then
+                add-apt-repository -y ppa:gwendal-lebihan-dev/cinnamon-stable
+                add-apt-repository -y ppa:bimsebasse/cinnamonextras
+                apt-get update
+            fi
+            print_title "CINNAMON"
             print_info "Cinnamon is a fork of GNOME Shell, initially developed by Linux Mint. It attempts to provide a more traditional user environment based on the desktop metaphor, like GNOME 2. Cinnamon uses Muffin, a fork of the GNOME 3 window manager Mutter, as its window manager."
             package_install "cinnamon"
-            package_install "gnome-extra gedit-plugins"
-            package_install "telepathy"
-            package_install "gksu nautilus-open-terminal xdg-user-dirs-gtk"
-            package_install "gvfs-smb"
-            package_install "pulseaudio"
-            package_install "deja-dup"
-            package_install "system-config-printer-gnome"
-            package_install "empathy-theme-ubuntu-adium-bzr"
-            package_install "automounter gnome-defaults-list"
-            gpasswd -a $USERNAME camera
             create_xinitrc "gnome-session-cinnamon"
             #CINNAMON CUSTOMIZATION {{{
             while [[ 1 ]]
@@ -768,13 +763,7 @@ function install_desktop_environment(){
             #E17 {{{
             print_title "E17 - http://wiki.archlinux.org/index.php/E17"
             print_info "Enlightenment, also known simply as E, is a stacking window manager for the X Window System which can be used alone or in conjunction with a desktop environment such as GNOME or KDE. Enlightenment is often used as a substitute for a full desktop environment."
-            package_install "e-svn e17-extra-svn consolekit"
-            package_install "ttf-dejavu ttf-bitstream-vera"
-            package_install "xdg-user-dirs"
-            package_install "leafpad epdfview"
-            package_install "lxappearance consolekit"
-            package_install "xarchiver"
-            package_install "gnome-defaults-list"
+            package_install "e17"
             chown -R $USERNAME:users /home/$USERNAME/.config
             create_xinitrc "enlightenment_start"
             #E17 CUSTOMIZATION {{{
@@ -1018,7 +1007,7 @@ function install_desktop_environment(){
             #}}}
         4)
             #KDE {{{
-            print_title "KDE - https://wiki.archlinux.org/index.php/KDE"
+            print_title "KDE"
             print_info "KDE is an international free software community producing an integrated set of cross-platform applications designed to run on Linux, FreeBSD, Microsoft Windows, Solaris and Mac OS X systems. It is known for its Plasma Desktop, a desktop environment provided as the default working environment on many Linux distributions."
             package_install "kde kde-l10n-$LANGUAGE_KDE kipi-plugins"
             create_xinitrc "startkde"
@@ -1255,7 +1244,7 @@ function install_desktop_environment(){
             #}}}
         7)
             #XFCE {{{
-            print_title "XFCE - https://wiki.archlinux.org/index.php/Xfce"
+            print_title "XFCE"
             print_info "Xfce is a free software desktop environment for Unix and Unix-like platforms, such as Linux, Solaris, and BSD. It aims to be fast and lightweight, while still being visually appealing and easy to use."
             package_install "xfce4 xfce4-goodies"
             create_xinitrc "startxfce4"
@@ -1529,7 +1518,7 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                print_title "LIBREOFFICE - https://wiki.archlinux.org/index.php/LibreOffice"
+                print_title "LIBREOFFICE"
                 package_install "libreoffice libreoffice-l10n-$LANGUAGE_LO lo-menubar"
                 package_install "hunspell-$LANGUAGE_HS"
                 package_install "aspell-$LANGUAGE_AS"
@@ -2031,7 +2020,7 @@ done
 function install_games(){
 while [[ 1 ]]
 do
-    print_title "GAMES - https://wiki.archlinux.org/index.php/Games"
+    print_title "GAMES"
     echo " 1) Action/Adventure"
     echo " 2) Arcade/Platformer"
     echo " 3) Dungeon"
@@ -2558,7 +2547,7 @@ done
 function install_fonts(){
 while [[ 1 ]]
 do
-    print_title "FONTS - https://wiki.archlinux.org/index.php/Fonts"
+    print_title "FONTS"
     echo " 1) $(menu_item "ttf-dejavu")"
     echo " 2) $(menu_item "ttf-google-webfonts")"
     echo " 3) $(menu_item "ttf-liberation")"
@@ -2623,7 +2612,7 @@ select_pkgmanager
 
 while [[ 1 ]]
 do
-    print_title "ARCHLINUX ULTIMATE INSTALL - https://github.com/helmuthdu/aui"
+    print_title "UBUNTU ULTIMATE INSTALL - https://github.com/helmuthdu/uui"
     echo " 1) $(mainmenu_item $BASICSETUP "Basic Setup")"
     echo " 2) $(mainmenu_item $DESKTOPENVIRONMENT "Desktop Environment")"
     echo " 3) $(mainmenu_item $ACCESSORIES "Accessories Apps")"
