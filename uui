@@ -510,6 +510,21 @@ function select_user(){
     done
 }
 #}}}
+#AUTOMATIC MODE{{{
+function automatic_mode(){
+    AUTOMATIC_MODE=0
+    print_title "AUTOMATIC MODE"
+    print_info "Create a custom install with all options pre-selected.\nUse this option with care."
+    print_warning "\tUse this mode only if you already know all the option.\n\tYou won't be able to select anything later."
+    read_input_text "Enable Automatic Mode"
+    if [[ $OPTION == y ]]; then
+        $EDITOR auiscript
+        echo -e "The installation will start now."
+        pause_function
+        AUTOMATIC_MODE=1
+    fi
+}
+#}}}
 #BASIC SETUP{{{
 function install_basic_setup(){
     print_title "(UN)COMPRESS TOOLS"
@@ -1780,6 +1795,7 @@ language_selector
 system_upgrade
 select_user
 select_pkgmanager
+automatic_mode
 
 while [[ 1 ]]
 do
