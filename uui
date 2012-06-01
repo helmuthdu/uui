@@ -16,23 +16,20 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-------------------------------------------------------------------------------
 
-#This script is used to active the automatic mode
-source uuiscript
-
 #VARIABLES {{{
-# Desktop Environment
+# DESKTOP ENVIRONMENT {{{
 E17=0
 GNOME=0
 KDE=0
 LXDE=0
 OPENBOX=0
 XFCE=0
-
-# Package manager
+#}}}
+# PACKAGE MANAGER {{{
 APTGET=0
 APTITUDE=0
-
-# Main menu
+#}}}
+# MAIN MENU {{{
 BASICSETUP=0
 DESKTOPENVIRONMENT=0
 ACCESSORIES=0
@@ -47,15 +44,15 @@ LAMP=0
 FONTS=0
 FONTSCONFIG=0
 CLEANPACKAGES=0
-
-# Arch
+#}}}
+# ARCH {{{
 ARCHI=`uname -m`
-
-# Prompt
+#}}}
+# PROMPT {{{
 prompt1="Enter your option: "
 prompt2="Enter n° of options (ex: 1 2 3 or 1-3): "
-
-# Colors
+#}}}
+# COLORS {{{
 # Regular Colors
 Black='\e[0;30m'        # Black
 Blue='\e[0;34m'         # Blue
@@ -74,6 +71,8 @@ BPurple='\e[1;35m'      # Purple
 BRed='\e[1;31m'         # Red
 BWhite='\e[1;37m'       # White
 BYellow='\e[1;33m'      # Yellow
+#}}}
+AUTOMATIC_MODE=0
 #}}}
 
 function read_input(){ #{{{
@@ -512,7 +511,6 @@ function select_user(){
 #}}}
 #AUTOMATIC MODE{{{
 function automatic_mode(){
-    AUTOMATIC_MODE=0
     print_title "AUTOMATIC MODE"
     print_info "Create a custom install with all options pre-selected.\nUse this option with care."
     print_warning "\tUse this mode only if you already know all the option.\n\tYou won't be able to select anything later."
@@ -523,6 +521,7 @@ function automatic_mode(){
         pause_function
         AUTOMATIC_MODE=1
     fi
+    source uuiscript
 }
 #}}}
 #BASIC SETUP{{{
@@ -649,8 +648,10 @@ function install_desktop_environment(){
             echo " 1) $(menu_item "bluebird-gtk-theme" "Bluebird")"
             echo " 2) $(menu_item "elementary-theme" "eGTK")"
             echo " 3) $(menu_item "holo-theme" "Holo")"
-            echo " 4) $(menu_item "zukini-theme" "Zukini")"
-            echo " 5) $(menu_item "zukitwo-gtk-theme" "Zukitwo")"
+            echo " 4) $(menu_item "adwaita-x-dark-theme" "Adwaita-X Dark")"
+            echo " 5) $(menu_item "adwaita-x-light-theme" "Adwaita-X Light")"
+            echo " 6) $(menu_item "zukini-theme" "Zukini")"
+            echo " 7) $(menu_item "zukitwo-gtk-theme" "Zukitwo")"
             echo ""
             echo " b) BACK"
             echo ""
@@ -668,9 +669,15 @@ function install_desktop_environment(){
                         package_install "holo-theme"
                         ;;
                     4)
-                        package_install "zukini-theme"
+                        package_install "adwaita-x-dark-theme"
                         ;;
                     5)
+                        package_install "adwaita-x-light-theme"
+                        ;;
+                    6)
+                        package_install "zukini-theme"
+                        ;;
+                    7)
                         package_install "zukitwo-gtk-theme"
                         ;;
                     "b")

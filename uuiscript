@@ -103,11 +103,14 @@
         GNOME_ICONS="2-5"
     #}}}
     #GTK THEMES {{{
-        # 1) eGTK
-        # 2) Holo
-        # 3) Zukini
-        # 4) Zukitwo
-        GNOME_THEMES="1-5"
+        # 1) Bluebird
+        # 2) eGTK
+        # 3) Holo
+        # 4) Adwaita-X Dark
+        # 5) Adwaita-X Light
+        # 6) Zukini
+        # 7) Zukitwo
+        GNOME_THEMES="1-7"
     #}}}
 #}}}
 #ACCESSORIES {{{
