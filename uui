@@ -516,7 +516,11 @@ function automatic_mode(){
     print_warning "\tUse this mode only if you already know all the option.\n\tYou won't be able to select anything later."
     read_input_text "Enable Automatic Mode"
     if [[ $OPTION == y ]]; then
-        $EDITOR auiscript
+        if $EDITOR &> /dev/null; then
+            nano auiscript
+        else
+            $EDITOR auiscript
+        fi
         echo -e "The installation will start now."
         pause_function
         AUTOMATIC_MODE=1
@@ -704,7 +708,7 @@ function install_desktop_environment(){
         1)
             #GNOME {{{
             print_title "GNOME"
-            apt-get install -y gedit-plugins gnome-tweak-tool
+            apt-get install -y gnome-shell gedit-plugins gnome-tweak-tool
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
             create_xinitrc "gnome-session"
             #GNOME CUSTOMIZATION {{{
@@ -917,6 +921,10 @@ function install_desktop_environment(){
                             ;;
                         6)
                             package_install "rosa-icons"
+                            wget https://abf.rosalinux.ru/import/rosa-icons/raw/rosa2012lts/rosa-1.0.27.tar.gz
+                            tar -zxvf rosa-1.0.27.tar.gz -C /usr/share/icons/
+                            chmod -R 755 /usr/share/icons/rosa-1.0.27
+                            rm -fr rosa-1.0.27.tar.gz
                             ;;
                         7)
                             package_install "caledonia-bundle plasma-theme-rosa plasma-theme-produkt ronak-plasmatheme"
@@ -1250,7 +1258,7 @@ do
                 print_title "LATEX"
                 package_install "latex-beamer texlive texlive-latex-extra texlive-math-extra"
                 package_install "texmaker"
-                if [[ $LANGUAGE == pt_BR || $LANGUAGE == pt_PT ]]; then
+                if [[ $LANGUAGE == pt_BR ]]; then
                     package_install "abntex texlive-lang-portuguese"
                 fi
                 ;;
@@ -1282,7 +1290,15 @@ do
                 package_install "aspell-$LANGUAGE_AS"
                 ;;
             10)
-                package_install "xmind"
+                if [[ $ARCHI == i686 ]]; then
+                    wget http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_i386.deb
+                    dpkg -i xmind-3.2.1.201011212218_i386.deb
+                    rm xmind-3.2.1.201011212218_i386.deb
+                else
+                    wget http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_amd64.deb
+                    dpkg -i xmind-3.2.1.201011212218_amd64.deb
+                    rm xmind-3.2.1.201011212218_amd64.deb
+                fi
                 ;;
             11)
                 package_install "zathura"
