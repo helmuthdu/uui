@@ -432,7 +432,7 @@ function custom_repositories(){
 #SYSTEM UPDATE {{{
 function system_upgrade(){
     print_title "UPDATING YOUR SYSTEM"
-	read -p "Update your system [y][n]: " OPTION
+	read -p "Update your system [y/N]: " OPTION
 	if [ $OPTION = "y" ]; then
         apt-get update
         apt-get upgrade
@@ -600,6 +600,10 @@ function install_git_tor(){
 #DESKTOP ENVIRONMENT {{{
 function install_desktop_environment(){
     function install_icons() { #{{{
+        if ! check_repository "webupd8team"; then
+            add-apt-repository -y ppa:tiheum/equinox
+            apt-get update
+        fi
         while [[ 1 ]]
         do
             print_title "GNOME ICONS"
@@ -707,6 +711,11 @@ function install_desktop_environment(){
     case "$OPTION" in
         1)
             #GNOME {{{
+            if ! check_repository "gnome3"; then
+                add-apt-repository -y ppa:webupd8team/gnome3
+                add-apt-repository -y ppa:gnome3-team/gnome3
+                apt-get update
+            fi
             print_title "GNOME"
             apt-get install -y gnome-shell gedit-plugins gnome-tweak-tool
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
