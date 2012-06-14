@@ -149,8 +149,8 @@ function check_repository(){ #{{{
         add-apt-repository -y $1
         apt-get update
         echo -e "\n$REPONAME repository added into sources.list.d direcotry"
+        pause_function
     fi
-    pause_function
 } #}}}
 function package_install(){ #{{{
     FORCECHECK="n"
@@ -597,6 +597,7 @@ function install_git_tor(){
 function install_desktop_environment(){
     function install_icons() { #{{{
         check_repository "ppa:tiheum/equinox"
+        check_repository "ppa:webupd8team/themes"
         while [[ 1 ]]
         do
             print_title "GNOME ICONS"
