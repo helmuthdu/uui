@@ -34,6 +34,17 @@
     #15) Clean Orphan Packages
     MAINMENU="1-15"
 #}}}
+#CUSTOMREPO {{{
+    # 1) Elementary
+    # 2) Globus Preview
+    # 3) GNOME 3
+    # 4) Jdownloader
+    # 5) Medibuntu
+    # 6) Themes/Icons
+    # 7) Ubuntu-tweak
+    # 8) Webupd8
+    CUSTOMREPO="1-8"
+#}}}
 #VIDEOCARD {{{
     # 1) ATI
     # 2) nVidia

@@ -131,6 +131,7 @@ function print_warning (){ #{{{
 function check_package(){ #{{{
     for PACKAGE in $1; do
         dpkg -l $PACKAGE &> /dev/null && return 0;
+        ls /usr/share/applications/ | grep $PACKAGE &> /dev/null && return 0;
     done
     return 1
 } #}}}
@@ -141,11 +142,15 @@ function checkbox_package(){ #{{{
     check_package "$1" && checkbox 1 || checkbox 0
 } #}}}
 function check_repository(){ #{{{
-    if ls /etc/apt/sources.list.d/ | grep $1 &>/dev/null; then
-        return 0
+    REPONAME=`echo "$1" | sed 's/.*\://' | sed 's/\//-/'`
+    if ls /etc/apt/sources.list.d/ | grep $REPONAME &>/dev/null; then
+        echo -e "\nWARNING: $REPONAME repository already configured"
     else
-        return 1
+        add-apt-repository -y $1
+        apt-get update
+        echo -e "\n$REPONAME repository added into sources.list.d direcotry"
     fi
+    pause_function
 } #}}}
 function package_install(){ #{{{
     FORCECHECK="n"
@@ -336,10 +341,6 @@ function select_pkgmanager(){
 #}}}
 #CUSTOM REPOSITORIES {{{
 function custom_repositories(){
-    function repository_install(){
-        echo -e "\n$1 repository added into sources.list.d direcotry"
-        pause_function
-    }
     print_title "CUSTOM REPOSITORIES"
     read_input_text "Add custom repositories" $CUSTOMREPO
     case "$OPTION" in
@@ -366,46 +367,42 @@ function custom_repositories(){
                 for OPT in ${OPTIONS[@]}; do
                     case $OPT in
                         1)
-                            add-apt-repository -y ppa:elementary-os/daily
-                            add-apt-repository -y ppa:nemequ/sqlheavy
-                            repository_install "elementary"
+                            check_repository "ppa:elementary-os/daily"
+                            check_repository "ppa:nemequ/sqlheavy"
                             ;;
                         2)
-                            add-apt-repository -y ppa:gloobus-dev/gloobus-preview
-                            repository_install "Gloobus Preview"
+                            check_repository "ppa:gloobus-dev/gloobus-preview"
                             ;;
                         3)
-                            add-apt-repository -y ppa:webupd8team/gnome3
-                            repository_install "GNOME 3"
+                            check_repository "ppa:webupd8team/gnome3"
                             ;;
                         4)
-                            add-apt-repository -y ppa:jd-team/jdownloader
-                            repository_install "Jdownloader"
+                            check_repository "ppa:jd-team/jdownloader"
                             ;;
                         5)
-                            wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list
-                            apt-get update
-                            apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring
-                            apt-get update
-                            repository_install "Medibuntu"
+                            if ls /etc/apt/sources.list.d/ | grep "medibuntu" &> /dev/null; then
+                                echo -e "\nWARNING: medibuntu repository already configured"
+                            else
+                                wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list
+                                apt-get update
+                                apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring
+                                apt-get update
+                            fi
+                            pause_function
                             ;;
                         6)
-                            add-apt-repository -y ppa:tiheum/equinox
-                            add-apt-repository -y ppa:webupd8team/themes
-                            repository_install "Themes & Icons"
+                            check_repository "ppa:tiheum/equinox"
+                            check_repository "ppa:webupd8team/themes"
                             ;;
                         7)
-                            add-apt-repository -y ppa:ubuntu-tweak-testing/ppa
-                            repository_install "Ubuntu-tweak"
+                            check_repository "ppa:ubuntu-tweak-testing/ppa"
                             ;;
                         8)
-                            add-apt-repository -y ppa:nilarimogard/webupd8
-                            repository_install "Webupd8"
+                            check_repository "ppa:nilarimogard/webupd8"
                             ;;
                         "a")
-                            read -p "Repository Name [ex: elementary-os]: " REPONAME
-                            add-apt-repository -y ppa:$REPONAME
-                            repository_install "$REPONAME"
+                            read -p "Repository Name [ex: elementary-os/daily]: " REPONAME
+                            check_repository "ppa:$REPONAME"
                             ;;
                         "d")
                             break
@@ -417,7 +414,6 @@ function custom_repositories(){
                 done
             elihw
             done
-            apt-get update
             CURRENT_STATUS=1
             ;;
             #}}}
@@ -600,10 +596,7 @@ function install_git_tor(){
 #DESKTOP ENVIRONMENT {{{
 function install_desktop_environment(){
     function install_icons() { #{{{
-        if ! check_repository "webupd8team"; then
-            add-apt-repository -y ppa:tiheum/equinox
-            apt-get update
-        fi
+        check_repository "ppa:tiheum/equinox"
         while [[ 1 ]]
         do
             print_title "GNOME ICONS"
@@ -642,14 +635,8 @@ function install_desktop_environment(){
         done
     } #}}}
     function install_themes() { #{{{
-        if ! check_repository "webupd8team"; then
-            add-apt-repository -y ppa:webupd8team/themes
-            apt-get update
-        fi
-        if ! check_repository "elementary"; then
-            add-apt-repository -y ppa:elementary-os/daily
-            apt-get update
-        fi
+        check_repository "ppa:webupd8team/themes"
+        check_repository "ppa:elementary-os/daily"
         while [[ 1 ]]
         do
             print_title "GTK2/GTK3 THEMES"
@@ -711,11 +698,8 @@ function install_desktop_environment(){
     case "$OPTION" in
         1)
             #GNOME {{{
-            if ! check_repository "gnome3"; then
-                add-apt-repository -y ppa:webupd8team/gnome3
-                add-apt-repository -y ppa:gnome3-team/gnome3
-                apt-get update
-            fi
+            check_repository "ppa:webupd8team/gnome3"
+            check_repository "ppa:gnome3-team/gnome3"
             print_title "GNOME"
             apt-get install -y gnome-shell gedit-plugins gnome-tweak-tool
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
@@ -844,17 +828,11 @@ function install_desktop_environment(){
                             package_install "gnome-activity-journal"
                             ;;
                         6)
-                            if ! check_repository "gloobus-preview"; then
-                                add-apt-repository -y ppa:gloobus-dev/gloobus-preview
-                                apt-get update
-                            fi
+                            check_repository "ppa:gloobus-dev/gloobus-preview"
                             package_install "gloobus-preview gloobus-sushi unoconv"
                             ;;
                         7)
-                            if ! check_repository "tualatrix"; then
-                                add-apt-repository -y ppa:tualatrix/ppa
-                                apt-get update
-                            fi
+                            check_repository "ppa:tualatrix/ppa"
                             package_install "ubuntu-tweak"
                             ;;
                         "d")
@@ -987,17 +965,11 @@ function install_desktop_environment(){
                             OPT=2
                             ;;
                         3)
-                            if ! check_repository "gloobus-preview"; then
-                                add-apt-repository -y ppa:gloobus-dev/gloobus-preview
-                                apt-get update
-                            fi
+                            check_repository "ppa:gloobus-dev/gloobus-preview"
                             package_install "gloobus-preview gloobus-sushi unoconv"
                             ;;
                         4)
-                            if ! check_repository "tualatrix"; then
-                                add-apt-repository -y ppa:tualatrix/ppa
-                                apt-get update
-                            fi
+                            check_repository "ppa:tualatrix/ppa"
                             package_install "ubuntu-tweak"
                             ;;
                         "d")
@@ -1109,7 +1081,7 @@ function install_development_apps(){
 while [[ 1 ]]
 do
     print_title "DEVELOPMENT APPS"
-    echo " 1) $(menu_item "aptana-studio")"
+    echo " 1) $(menu_item "AptanaStudio")"
     echo " 2) $(menu_item "bluefish")"
     echo " 3) $(menu_item "eclipse")"
     echo " 4) $(menu_item "emacs")"
@@ -1131,10 +1103,7 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                if ! check_repository "java"; then
-                    add-apt-repository -y ppa:webupd8team/java
-                    apt-get update
-                fi
+                check_repository "ppa:webupd8team/java"
                 package_install "oracle-java7-installer"
                 package_install "libjpeg62 libwebkitgtk-1.0-0 git-core"
                 if [[ ! -d /opt/Aptana_Studio_3 ]]; then
@@ -1164,10 +1133,7 @@ do
                 ;;
             8)
                 package_remove "openjdk-7-jdk openjdk-7-jre"
-                if ! check_repository "java"; then
-                    add-apt-repository -y ppa:webupd8team/java
-                    apt-get update
-                fi
+                check_repository ppa:webupd8team/java""
                 sudo apt-get install oracle-java7-installer
                 ;;
             9)
@@ -1178,10 +1144,7 @@ do
                 chown -R $USERNAME:users /home/$USERNAME/.config
                 ;;
             10)
-                if ! check_repository "sublime-text"; then
-                    add-apt-repository -y ppa:webupd8team/sublime-text-2
-                    apt-get update
-                fi
+                check_repository "webupd8team/sublime-text-2"
                 package_install "sublime-text-2-beta"
                 ;;
             11)
@@ -1288,10 +1251,7 @@ do
                 package_install "impressive"
                 ;;
             8)
-                if ! check_repository "nitrotasks"; then
-                    add-apt-repository -y ppa:cooperjona/nitrotasks
-                    apt-get update
-                fi
+                check_repository "ppa:cooperjona/nitrotasks"
                 package_install "nitrotasks"
                 ;;
             9)
@@ -1395,10 +1355,7 @@ do
                 package_install "blender"
                 ;;
             2)
-                if ! check_repository "gimp"; then
-                    add-apt-repository -y ppa:otto-kesselgulasch/gimp
-                    apt-get update
-                fi
+                check_repository "ppa:otto-kesselgulasch/gimp"
                 package_install "gimp"
                 ;;
             3)
@@ -1491,10 +1448,7 @@ do
                 package_install "flashplugin-installer"
                 ;;
             5)
-                if ! check_repository "jdownloader"; then
-                    add-apt-repository -y ppa:jd-team/jdownloader
-                    apt-get update
-                fi
+                check_repository "ppa:jd-team/jdownloader"
                 package_install "jdownloader"
                 ;;
             6)
@@ -1622,21 +1576,22 @@ do
                 package_install "musique"
                 ;;
             8)
-                if ! check_repository "novula"; then
-                    add-apt-repository -y ppa:nuvola-player-builders/stable
-                    apt-get update
-                fi
+                check_repository "ppa:nuvola-player-builders/stable"
                 package_install "nuvolaplayer"
                 ;;
             9)
                 package_install "rhythmbox"
                 ;;
             10)
-                if ! check_repository "spotify"; then
+                if ls /etc/apt/sources.list.d/ | grep "spotify" &> /dev/null; then
+                    echo -e "\nWARNING: spotify-stable repository already configured"
+                else
                     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify-stable.list
                     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4E9CFF4E
                     apt-get update
+                    echo -e "\nspotify-stable repository added into sources.list.d direcotry"
                 fi
+                pause_function
                 package_install "spotify"
                 ;;
             11)
@@ -1694,12 +1649,9 @@ do
     for OPT in ${OPTIONS[@]}; do
         case "$OPT" in
             1)
-                if ! check_repository "audience"; then
-                    sudo add-apt-repository -y ppa:elementary-os/testing
-                    sudo add-apt-repository -y ppa:vala-team/ppa
-                    sudo add-apt-repository -y ppa:audience-members/ppa
-                    apt-get update
-                fi
+                check_repository "ppa:elementary-os/testing"
+                check_repository "ppa:vala-team/ppa"
+                check_repository "ppa:audience-members/ppa"
                 package_install "audience"
                 ;;
             2)
