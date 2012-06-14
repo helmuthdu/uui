@@ -1133,7 +1133,7 @@ do
                 ;;
             8)
                 package_remove "openjdk-7-jdk openjdk-7-jre"
-                check_repository ppa:webupd8team/java""
+                check_repository "ppa:webupd8team/java"
                 sudo apt-get install oracle-java7-installer
                 ;;
             9)
@@ -1144,7 +1144,7 @@ do
                 chown -R $USERNAME:users /home/$USERNAME/.config
                 ;;
             10)
-                check_repository "webupd8team/sublime-text-2"
+                check_repository "ppa:webupd8team/sublime-text-2"
                 package_install "sublime-text-2-beta"
                 ;;
             11)
