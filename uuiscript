@@ -69,14 +69,10 @@
         GNOME_OPTIONS="1-7"
         #GNOME EXTENSIONS {{{
             # 1) gpaste
-            # 2) gtile
-            # 3) media-player
-            # 4) noa11y
-            # 5) pomodoro
-            # 6) system-monitor
-            # 7) user-theme
-            # 8) weather
-            GNOME_EXTENSIONS="1-8"
+            # 2) media-player
+            # 3) noa11y
+            # 4) weather
+            GNOME_EXTENSIONS="1-4"
         #}}}
         #GNOME SHELL THEMES {{{
             # 1) eOS

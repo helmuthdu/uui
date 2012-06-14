@@ -212,7 +212,7 @@ function sumary(){ #{{{
 } #}}}
 function menu_item(){ #{{{
     [[ $# -lt 2 ]] && PACKAGE_NAME="$1" || PACKAGE_NAME="$2";
-    CHARS_TO_REMOVE=("Ttf-" "-bzr" "-hg" "-svn" "-git" "-bin" "-stable" "Gnome-shell-theme-" "Gnome-shell-extension-");
+    CHARS_TO_REMOVE=("Ttf-" "-bzr" "-hg" "-svn" "-git" "-bin" "-stable" "Gnome-shell-theme-" "Gnome-shell-extensions-");
     for CHARS in ${CHARS_TO_REMOVE[@]}; do PACKAGE_NAME=`echo ${PACKAGE_NAME^} | sed 's/'$CHARS'//'`; done
     echo -e "$(checkbox_package "$1") ${BWhite}$PACKAGE_NAME${White}"
 } #}}}
@@ -739,11 +739,7 @@ function install_desktop_environment(){
                                 echo " 1) $(menu_item "gnome-shell-extensions-gpaste")"
                                 echo " 2) $(menu_item "gnome-shell-extensions-mediaplayer")"
                                 echo " 3) $(menu_item "gnome-shell-extensions-noa11y")"
-                                echo " 4) $(menu_item "gnome-shell-extensions-pomodoro")"
-                                echo " 5) $(menu_item "gnome-shell-extensions-system-monitor" "System-monitor")"
-                                echo " 6) $(menu_item "gnome-shell-extensions-user-theme")"
-                                echo " 7) $(menu_item "gnome-shell-extensions-weather")"
-                                echo " 8) $(menu_item "gnome-shell-extensions-gtile")"
+                                echo " 4) $(menu_item "gnome-shell-extensions-weather")"
                                 echo ""
                                 echo " b) BACK"
                                 echo ""
@@ -761,19 +757,7 @@ function install_desktop_environment(){
                                             package_install "gnome-shell-extensions-noa11y"
                                             ;;
                                         4)
-                                            package_install "gnome-shell-extensions-pomodoro"
-                                            ;;
-                                        5)
-                                            package_install "gnome-shell-extensions-system-monitor"
-                                            ;;
-                                        6)
-                                            package_install "gnome-shell-extensions-user-theme"
-                                            ;;
-                                        7)
                                             package_install "gnome-shell-extensions-weather"
-                                            ;;
-                                        8)
-                                            package_install "gnome-shell-extensions-gtile"
                                             ;;
                                         "b")
                                             break
