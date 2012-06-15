@@ -549,10 +549,13 @@ function install_basic_setup(){
     print_title "(UN)COMPRESS TOOLS"
     package_install "zip unzip unrar p7zip"
     print_title "SSH"
+    print_info "Secure Shell (SSH) is a network protocol that allows data to be exchanged over a secure channel between two computers."
     package_install "openssh-server"
     print_title "Preload"
+    print_info "Preload is a program which runs as a daemon and records statistics about usage of programs using Markov chains; files of more frequently-used programs are, during a computer's spare time, loaded into memory. This results in faster startup times as less data needs to be fetched from disk. preload is often paired with prelink."
     package_install "preload"
     print_title "ZRam"
+    print_info "Zram creates a device in RAM and compresses it. If you use for swap means that part of the RAM can hold much more information but uses more CPU. Still, it is much quicker than swapping to a hard drive. If a system often falls back to swap, this could improve responsiveness. Zram is in mainline staging (therefore its not stable yet, use with caution)."
     package_install "zram-config"
 }
 #}}}
