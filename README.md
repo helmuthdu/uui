@@ -2,8 +2,6 @@
 
 Install and configure archlinux has never been easier!
 
-You can try it first with a `virtualbox`
-
 ## Prerequisites
 
 - You need to have Ubuntu already installed and rebooted
@@ -15,12 +13,12 @@ You can try it first with a `virtualbox`
 
 ### With git
 - Install git: `apt-get install git`
-- get the script: `git clone git://github.com/helmuthdu/aui`
-- run the script: `cd aui && ./aui`
+- get the script: `git clone git://github.com/helmuthdu/uui`
+- run the script: `cd aui && ./uui`
 
 ### Without git
-- get the script: ` wget --no-check-certificate https://github.com/helmuthdu/aui/tarball/master -O - | tar xz`
-- run the script: `./aui`
+- get the script: ` wget --no-check-certificate https://github.com/helmuthdu/uui/tarball/master -O - | tar xz`
+- run the script: `./uui`
 
 ## What does the script do?
 

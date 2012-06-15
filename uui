@@ -153,7 +153,6 @@ function check_repository(){ #{{{
     fi
 } #}}}
 function package_install(){ #{{{
-    FORCECHECK="n"
     for PACKAGE in $1; do
         if ! check_package "$PACKAGE" ; then
             if [[ $APTITUDE -eq 1 ]]; then
@@ -165,6 +164,19 @@ function package_install(){ #{{{
             echo -e "Warning: $PACKAGE is up to date --skipping"
         fi
     done
+} #}}}
+function download_package(){ #{{{
+    PACKAGE_NAME=`echo "$1" | sed 's/.*\///'`
+    PACKAGE_EXTENSION=`echo $PACKAGE_NAME | sed 's/.*\.//'`
+    [[ ! -d downloaded_packages ]] && mkdir downloaded_packages;
+    cd downloaded_packages
+    wget $1
+    if [[ $PACKAGE_EXTENSION == deb ]]; then
+        dpkg -i $PACKAGE_NAME
+        apt-get install -fy
+    elif [[ $PACKAGE_EXTENSION == zip ]]; then
+        unzip $PACKAGE_NAME -d $2
+    fi
 } #}}}
 function package_remove(){ #{{{
     if [[ $AUTOMATIC_MODE -eq 1 ]]; then
@@ -1092,8 +1104,7 @@ do
                 package_install "oracle-java7-installer"
                 package_install "libjpeg62 libwebkitgtk-1.0-0 git-core"
                 if [[ ! -d /opt/Aptana_Studio_3 ]]; then
-                    wget https://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.1.2.201205041324/linux/Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip
-                    unzip Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip -d /opt
+                    download_package "https://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.1.2.201205041324/linux/Aptana_Studio_3_Setup_Linux_x86_3.1.2.zip" "/opt"
                     wget http://www.samclarke.com/wp-content/uploads/2012/04/AptanaStudio3.desktop
                     mv AptanaStudio3.desktop /usr/share/applications/AptanaStudio3.desktop
                 fi
@@ -1140,13 +1151,9 @@ do
             12)
                 #http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/
                 if [[ $ARCHI == i686 ]]; then
-                    wget http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.38-1ubu1104-i386.deb
-                    dpkg -i mysql-workbench-gpl-5.2.40-1ubu1104-i386.deb
-                    rm mysql-workbench-gpl-5.2.40-1ubu1104-i386.deb
+                    download_package "http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.38-1ubu1104-i386.deb"
                 else
-                    wget http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.40-1ubu1104-amd64.deb
-                    dpkg -i mysql-workbench-gpl-5.2.40-1ubu1104-amd64.deb
-                    rm mysql-workbench-gpl-5.2.40-1ubu1104-amd64.deb
+                    download_package "http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.40-1ubu1104-amd64.deb"
                 fi
                 apt-get install -fy
                 ;;
@@ -1245,13 +1252,9 @@ do
                 ;;
             10)
                 if [[ $ARCHI == i686 ]]; then
-                    wget http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_i386.deb
-                    dpkg -i xmind-3.2.1.201011212218_i386.deb
-                    rm xmind-3.2.1.201011212218_i386.deb
+                    download_package "http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_i386.deb"
                 else
-                    wget http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_amd64.deb
-                    dpkg -i xmind-3.2.1.201011212218_amd64.deb
-                    rm xmind-3.2.1.201011212218_amd64.deb
+                    download_package "http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_amd64.deb"
                 fi
                 ;;
             11)
@@ -1420,16 +1423,18 @@ do
                 package_install "chromium flashplugin-installer"
                 ;;
             3)
-                http://dl.google.com/dl/earth/client/current/google-earth-stable_current_i386.deb
-                dpkg -i google-earth-stable_current_i386.deb
-                rm google-earth-stable_current_i386.deb
-                apt-get install -fy
+                if [ "$ARCHI" = "i686" ]; then
+                    download_package "http://dl.google.com/dl/earth/client/current/google-earth-stable_current_i386.deb"
+                else
+                    download_package "http://dl.google.com/dl/earth/client/current/google-earth-stable_current_amd64.deb"
+                fi
                 ;;
             4)
-                wget https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb
-                dpkg -i google-chrome-stable_current_i386.deb
-                rm google-chrome-stable_current_i386.deb
-                apt-get install -fy
+                if [ "$ARCHI" = "i686" ]; then
+                    download_package "https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb"
+                else
+                    download_package "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+                fi
                 package_install "flashplugin-installer"
                 ;;
             5)
@@ -1461,10 +1466,7 @@ do
                 package_install "teamspeak-client"
                 ;;
             14)
-                wget http://www.teamviewer.com/download/teamviewer_linux.deb
-                dpkg -i teamviewer_linux.deb
-                rm teamviewer_linux.deb
-                apt-get install -fy
+                download_package "http://www.teamviewer.com/download/teamviewer_linux.deb"
                 ;;
             15)
                 if [[ $KDE -eq 1 ]]; then
@@ -1679,6 +1681,14 @@ do
                 package_install "kazam"
                 ;;
             15)
+                if ls /etc/apt/sources.list.d/ | grep "medibuntu" &> /dev/null; then
+                    echo -e "\nWARNING: medibuntu repository already configured"
+                else
+                    wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list
+                    apt-get update
+                    apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring
+                    apt-get update
+                fi
                 package_install "libdvdread4 libdvdnav4 libquicktime2 libdvdcss2 cdrdao"
                 if [ "$ARCHI" = "i686" ]; then
                     package_install "w32codecs"
