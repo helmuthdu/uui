@@ -195,15 +195,17 @@
     # 4) Google Chrome
     # 5) Jdownloader
     # 6) Irssi
-    # 7) Mozilla Firefox
-    # 8) Mozilla Thunderbird
-    # 9) Pidgin
-    #10) Remmina
-    #11) Skype
-    #12) Teamspeak
-    #13) Teamviewer
-    #14) Trasmission
-    #15) X-Chat/Konversation
+    # 7) Midori
+    # 8) Mozilla Firefox
+    # 9) Mozilla Thunderbird
+    #10) Emesene
+    #11) Pidgin
+    #12) Remmina
+    #13) Skype
+    #14) Teamspeak
+    #15) Teamviewer
+    #16) Trasmission
+    #17) X-Chat/Konversation
     INTERNET_OPTIONS="1 2 5 7"
 #}}}
 #LAMP {{{

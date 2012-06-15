@@ -547,9 +547,13 @@ function automatic_mode(){
 #BASIC SETUP{{{
 function install_basic_setup(){
     print_title "(UN)COMPRESS TOOLS"
-    apt-get install -y zip unzip unrar p7zip
+    package_install "zip unzip unrar p7zip"
     print_title "SSH"
-    apt-get install -y openssh-server
+    package_install "openssh-server"
+    print_title "Preload"
+    package_install "preload"
+    print_title "ZRam"
+    package_install "zram-config"
 }
 #}}}
 #VIDEO CARDS {{{
@@ -1396,13 +1400,14 @@ do
     echo " 7) $(menu_item "midori")"
     echo " 8) $(menu_item "firefox")"
     echo " 9) $(menu_item "thunderbird")"
-    echo "10) $(menu_item "pidgin")"
-    echo "11) $(menu_item "remmina")"
-    echo "12) $(menu_item "skype")"
-    echo "13) $(menu_item "teamspeak-client")"
-    echo "14) $(menu_item "teamviewer")"
-    echo "15) $(menu_item "transmission-qt transmission-gtk" "Trasmission")"
-    echo "16) $(menu_item "konversation xchat" "$([[ $KDE -eq 1 ]] && echo "Konversation" || echo "X-Chat";)")"
+    echo "10) $(menu_item "emesene")"
+    echo "11) $(menu_item "pidgin")"
+    echo "12) $(menu_item "remmina")"
+    echo "13) $(menu_item "skype")"
+    echo "14) $(menu_item "teamspeak-client")"
+    echo "15) $(menu_item "teamviewer")"
+    echo "16) $(menu_item "transmission-qt transmission-gtk" "Trasmission")"
+    echo "17) $(menu_item "konversation xchat" "$([[ $KDE -eq 1 ]] && echo "Konversation" || echo "X-Chat";)")"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1457,28 +1462,36 @@ do
                 package_install "thunderbird thunderbird-locale-$LANGUAGE_FF"
                 ;;
             10)
-                package_install "pidgin"
+                check_repository "ppa:emesene-team/emesene-stable"
+                package_install "emesene"
                 ;;
             11)
-                package_install "remmina"
+                package_install "pidgin"
                 ;;
             12)
-                package_install "skype"
+                package_install "remmina"
                 ;;
             13)
-                package_install "teamspeak-client"
+                if [ "$ARCHI" = "i686" ]; then
+                    download_package "http://download.skype.com/linux/skype-ubuntu_4.0.0.7-1_i386.deb"
+                else
+                    download_package "http://download.skype.com/linux/skype-ubuntu_4.0.0.7-1_amd64.deb"
+                fi
                 ;;
             14)
-                download_package "http://www.teamviewer.com/download/teamviewer_linux.deb"
+                package_install "teamspeak-client"
                 ;;
             15)
+                download_package "http://www.teamviewer.com/download/teamviewer_linux.deb"
+                ;;
+            16)
                 if [[ $KDE -eq 1 ]]; then
                     package_install "transmission-qt"
                 else
                     package_install "transmission-gtk"
                 fi
                 ;;
-            16)
+            17)
                 if [[ $KDE -eq 1 ]]; then
                     package_install "konversation"
                 else
