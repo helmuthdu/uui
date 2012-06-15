@@ -168,15 +168,23 @@ function package_install(){ #{{{
 function download_package(){ #{{{
     PACKAGE_NAME=`echo "$1" | sed 's/.*\///'`
     PACKAGE_EXTENSION=`echo $PACKAGE_NAME | sed 's/.*\.//'`
-    [[ ! -d downloaded_packages ]] && mkdir downloaded_packages;
+    [[ ! -d downloaded_packages ]] && sudo -u $USERNAME mkdir downloaded_packages;
     cd downloaded_packages
-    wget $1
-    if [[ $PACKAGE_EXTENSION == deb ]]; then
-        dpkg -i $PACKAGE_NAME
-        apt-get install -fy
-    elif [[ $PACKAGE_EXTENSION == zip ]]; then
-        unzip $PACKAGE_NAME -d $2
-    fi
+    [[ ! -f $PACKAGE_NAME ]] && wget $1;
+    case "$PACKAGE_EXTENSION" in
+        "deb")
+            dpkg -i $PACKAGE_NAME
+            apt-get install -fy
+            ;;
+        "zip")
+            unzip $PACKAGE_NAME -d $2
+            chmod -R 755 $2/$PACKAGE_NAME
+            ;;
+        "gz")
+            tar -zxvf $PACKAGE_NAME -C $2
+            chmod -R 755 $2/$PACKAGE_NAME
+            ;;
+    esac
 } #}}}
 function package_remove(){ #{{{
     if [[ $AUTOMATIC_MODE -eq 1 ]]; then
@@ -723,7 +731,7 @@ function install_desktop_environment(){
                 print_title "GNOME CUSTOMIZATION"
                 echo " 1) $(menu_item "faenza-icon-theme faenza-cupertino faience-icon-theme elementary-icon-theme" "GNOME Icons")"
                 echo " 2) $(menu_item "egtk-bzr orion-gtk-theme zukitwo-themes zukini-theme" "GNOME Themes")"
-                echo " 3) $(menu_item "gnome-shell-extensionss-gpaste gnome-shell-extensions-gtile gnome-shell-extensions-mediaplayer gnome-shell-extensions-noa11y gnome-shell-extensions-pomodoro gnome-shell-extensions-system-monitor gnome-shell-extensions-user-theme gnome-shell-extensions-weather" "GNOME Shell Extensions")"
+                echo " 3) $(menu_item "gnome-shell-extensionss-gpaste gnome-shell-extensions-mediaplayer gnome-shell-extensions-noa11y gnome-shell-extensions-weather" "GNOME Shell Extensions")"
                 echo " 4) $(menu_item "gnome-shell-theme-frieze gnome-shell-theme-elegance" "GNOME Shell Themes")"
                 echo " 5) $(menu_item "gnome-activity-journal")"
                 echo " 6) $(menu_item "gloobus-preview")"
@@ -861,10 +869,10 @@ function install_desktop_environment(){
             rm 144205-Sweet.tar.gz
             rm 141920-Kawai.tar.gz
             mkdir -p /home/$USERNAME/.kde4/share/apps/color-schemes
-            mv Sweet/Sweet.colors /home/$USERNAME/.kde4/share/apps/color-schemes
-            mv Kawai/Kawai.colors /home/$USERNAME/.kde4/share/apps/color-schemes
             mkdir -p /home/$USERNAME/.kde4/share/apps/QtCurve
+            mv Sweet/Sweet.colors /home/$USERNAME/.kde4/share/apps/color-schemes
             mv Sweet/Sweet.qtcurve /home/$USERNAME/.kde4/share/apps/QtCurve
+            mv Kawai/Kawai.colors /home/$USERNAME/.kde4/share/apps/color-schemes
             mv Kawai/Kawai.qtcurve /home/$USERNAME/.kde4/share/apps/QtCurve
             chown -R $USERNAME:users /home/$USERNAME/.kde4
             rm -fr Kawai Sweet
@@ -904,11 +912,7 @@ function install_desktop_environment(){
                             package_install "k3b dvd+rw-tools"
                             ;;
                         6)
-                            package_install "rosa-icons"
-                            wget https://abf.rosalinux.ru/import/rosa-icons/raw/rosa2012lts/rosa-1.0.27.tar.gz
-                            tar -zxvf rosa-1.0.27.tar.gz -C /usr/share/icons/
-                            chmod -R 755 /usr/share/icons/rosa-1.0.27
-                            rm -fr rosa-1.0.27.tar.gz
+                            download_package "https://abf.rosalinux.ru/import/rosa-icons/raw/rosa2012lts/rosa-1.0.27.tar.gz" "/usr/share/icons/"
                             ;;
                         7)
                             package_install "caledonia-bundle plasma-theme-rosa plasma-theme-produkt ronak-plasmatheme"
@@ -1134,10 +1138,9 @@ do
                 ;;
             9)
                 package_install "qtcreator qt4-doc qt4-demos"
-                mkdir -p /home/$USERNAME/.config/Nokia/qtcreator/styles
-                wget http://angrycoding.googlecode.com/svn/branches/qt-creator-monokai-theme/monokai.xml
-                mv monokai.xml /home/$USERNAME/.config/Nokia/qtcreator/styles/
-                chown -R $USERNAME:users /home/$USERNAME/.config
+                sudo -u $USERNAME mkdir -p /home/$USERNAME/.config/Nokia/qtcreator/styles
+                sudo -u $USERNAME wget http://angrycoding.googlecode.com/svn/branches/qt-creator-monokai-theme/monokai.xml
+                sudo -u $USERNAME mv monokai.xml /home/$USERNAME/.config/Nokia/qtcreator/styles/
                 ;;
             10)
                 check_repository "ppa:webupd8team/sublime-text-2"
