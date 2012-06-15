@@ -1331,7 +1331,7 @@ do
     echo " 3) $(menu_item "gimp-plugin-registry" "Gimp-plugins")"
     echo " 4) $(menu_item "gthumb")"
     echo " 5) $(menu_item "inkscape")"
-    echo " 6) $(menu_item "mcomix")"
+    echo " 6) $(menu_item "comix")"
     echo " 7) $(menu_item "mypaint")"
     echo " 8) $(menu_item "scribus")"
     echo " 9) $(menu_item "shotwell")"
@@ -1346,11 +1346,11 @@ do
                 package_install "blender"
                 ;;
             2)
-                check_repository "ppa:otto-kesselgulasch/gimp"
+                check_repository "ppa:gimps/gimp"
                 package_install "gimp"
                 ;;
             3)
-                package_install "gimp-resynthesizer"
+                package_install "gimp-resynthesizer gimp-plugin-registry"
                 ;;
             4)
                 package_install "gthumb"
@@ -1359,7 +1359,7 @@ do
                 package_install "inkscape sozi"
                 ;;
             6)
-                package_install "mcomix"
+                package_install "comix"
                 ;;
             7)
                 package_install "mypaint"
