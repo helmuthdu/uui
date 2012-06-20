@@ -167,21 +167,20 @@ function package_install(){ #{{{
 } #}}}
 function download_package(){ #{{{
     PACKAGE_NAME=`echo "$1" | sed 's/.*\///'`
-    PACKAGE_EXTENSION=`echo $PACKAGE_NAME | sed 's/.*\.//'`
     [[ ! -d downloaded_packages ]] && sudo -u $USERNAME mkdir downloaded_packages;
     cd downloaded_packages
     [[ ! -f $PACKAGE_NAME ]] && wget $1;
-    case "$PACKAGE_EXTENSION" in
-        "deb")
+    case "$PACKAGE_NAME" in
+        *.deb)
             dpkg -i $PACKAGE_NAME
             apt-get install -fy
             ;;
-        "zip")
+        *.zip)
             unzip $PACKAGE_NAME -d $2
             chmod -R 755 $2/$PACKAGE_NAME
             ;;
-        "gz")
-            tar -zxvf $PACKAGE_NAME -C $2
+        *.tar.gz)
+            tar zxvf $PACKAGE_NAME -C $2
             chmod -R 755 $2/$PACKAGE_NAME
             ;;
     esac
