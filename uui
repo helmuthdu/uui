@@ -1592,7 +1592,7 @@ do
                     echo -e "\nWARNING: spotify-stable repository already configured"
                 else
                     echo "deb http://repository.spotify.com stable non-free" > /etc/apt/sources.list.d/spotify-stable.list
-                    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4E9CFF4E
+                    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 94558F59
                     apt-get update
                     echo -e "\nspotify-stable repository added into sources.list.d direcotry"
                 fi
