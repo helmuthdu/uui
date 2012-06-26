@@ -98,7 +98,24 @@
         # 2) GNOME Themes
         # 3) Gloobus-preview
         # 4) Ubuntu-tweak
-        GNOME_OPTIONS="1-4"
+        # 5) Unity Lens
+        UNITY_OPTIONS="1-4"
+        #UNITY LENS {{{
+            # 1) unity-lens-bookmarks
+            # 2) unity-lens-photo
+            # 3) unity-lens-askubuntu
+            # 4) unity-lens-cooking
+            # 5) unity-lens-graphicdesign
+            # 6) unity-lens-torrents
+            # 7) unity-lens-wikipedia
+            # 8) unity-scope-calculator
+            # 9) unity-scope-cities
+            #10) unity-scope-colourlovers
+            #11) unity-scope-deviantart
+            #12) unity-scope-grooveshark
+            #13) unity-scope-rottentomatoes
+            UNITY_LENS="1 2 6 8 12"
+        #}}}
     #}}}
 
     #GNOME ICONS {{{

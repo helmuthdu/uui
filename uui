@@ -951,16 +951,17 @@ function install_desktop_environment(){
             #UNITY CUSTOMIZATION {{{
             while [[ 1 ]]
             do
-                print_title "GNOME CUSTOMIZATION"
+                print_title "UNITY CUSTOMIZATION"
                 echo " 1) $(menu_item "faenza-icon-theme faenza-cupertino faience-icon-theme elementary-icon-theme" "GNOME Icons")"
                 echo " 2) $(menu_item "egtk-bzr orion-gtk-theme zukitwo-themes zukini-theme" "GTK Themes")"
                 echo " 3) $(menu_item "gloobus-preview")"
                 echo " 4) $(menu_item "ubuntu-tweak")"
+                echo " 5) $(menu_item "Unity Lens")"
                 echo ""
                 echo " d) DONE"
                 echo ""
-                GNOME_OPTIONS+=" d"
-                read_input_options "$GNOME_OPTIONS"
+                UNITY_OPTIONS+=" d"
+                read_input_options "$UNITY_OPTIONS"
                 for OPT in ${OPTIONS[@]}; do
                     case "$OPT" in
                         1)
@@ -978,6 +979,85 @@ function install_desktop_environment(){
                         4)
                             check_repository "ppa:tualatrix/ppa"
                             package_install "ubuntu-tweak"
+                            ;;
+                        5)
+                            #UNITY LENS {{{
+                            check_repository "ppa:nilarimogard/webupd8"
+                            check_repository "ppa:scopes-packagers/ppa"
+                            while [[ 1 ]]
+                            do
+                                print_title "UNITY LENS"
+                                echo " 1) $(menu_item "bookmarks-lens" "unity-lens-bookmarks")"
+                                echo " 2) $(menu_item "unity-lens-photo")"
+                                echo " 3) $(menu_item "unity-lens-askubuntu")"
+                                echo " 4) $(menu_item "unity-lens-cooking")"
+                                echo " 5) $(menu_item "unity-lens-graphicdesign")"
+                                echo " 6) $(menu_item "unity-lens-torrents")"
+                                echo " 7) $(menu_item "unity-lens-wikipedia")"
+                                echo " 8) $(menu_item "unity-scope-calculator")"
+                                echo " 9) $(menu_item "unity-scope-cities")"
+                                echo "10) $(menu_item "unity-scope-colourlovers")"
+                                echo "11) $(menu_item "unity-scope-deviantart")"
+                                echo "12) $(menu_item "unity-scope-grooveshark")"
+                                echo "13) $(menu_item "unity-scope-rottentomatoes") (movie review)"
+                                echo ""
+                                echo " b) BACK"
+                                echo ""
+                                UNITY_LENS+=" b"
+                                read_input_options "$UNITY_LENS"
+                                for OPT in ${OPTIONS[@]}; do
+                                    case "$OPT" in
+                                        1)
+                                            package_install "bookmarks-lens"
+                                            ;;
+                                        2)
+                                            package_install "unity-lens-photo unity-scope-flickr unity-scope-shotwell"
+                                            ;;
+                                        3)
+                                            package_install "unity-lens-askubuntu"
+                                            ;;
+                                        4)
+                                            package_install "unity-lens-cooking"
+                                            ;;
+                                        5)
+                                            package_install "unity-lens-graphicdesign"
+                                            ;;
+                                        6)
+                                            package_install "unity-lens-torrents unity-scope-piratebay"
+                                            ;;
+                                        7)
+                                            package_install "unity-lens-wikipedia"
+                                            ;;
+                                        8)
+                                            package_install "unity-scope-calculator"
+                                            ;;
+                                        9)
+                                            package_install "unity-lens-utilities unity-scope-cities"
+                                            ;;
+                                        10)
+                                            package_install "unity-scope-colourlovers"
+                                            ;;
+                                        11)
+                                            package_install "unity-scope-deviantart"
+                                            ;;
+                                        12)
+                                            package_install "unity-scope-grooveshark"
+                                            ;;
+                                        13)
+                                            package_install "unity-lens-utilities unity-scope-rottentomatoes"
+                                            ;;
+                                        "b")
+                                            break
+                                            ;;
+                                        *)
+                                            invalid_option
+                                            ;;
+                                    esac
+                                done
+                            elihw
+                            done
+                            #}}}
+                            OPT=5
                             ;;
                         "d")
                             break
