@@ -956,7 +956,7 @@ function install_desktop_environment(){
                 echo " 2) $(menu_item "egtk-bzr orion-gtk-theme zukitwo-themes zukini-theme" "GTK Themes")"
                 echo " 3) $(menu_item "gloobus-preview")"
                 echo " 4) $(menu_item "ubuntu-tweak")"
-                echo " 5) $(menu_item "Unity Lens")"
+                echo " 5) $(menu_item "unity-lens-* unity-scope-*" "Unity Lens")"
                 echo ""
                 echo " d) DONE"
                 echo ""
