@@ -454,53 +454,85 @@ function system_upgrade(){
     fi
 }
 #}}}
-#SELECT USER {{{
+#SELECT/CREATE USER {{{
 function select_user(){
-    create_new_user(){ #{{{
+    #CREATE NEW USER {{{
+    function create_new_user(){
         read -p "Username: " USERNAME
         useradd -m -g users -G  adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare -s /bin/bash $USERNAME
         passwd $USERNAME
+        configure_user_account
+    } #}}}
+    #CONFIGURE USER ACCOUNT {{{
+    function configure_user_account(){
         cp /etc/skel/.* /home/$USERNAME/
-        #BASHRC {{{
-            print_title "BASHRC"
-            apt-get install -y git
-            git clone git://github.com/helmuthdu/dotfiles
-            cp dotfiles/.* ~
-            cp dotfiles/.* /home/$USERNAME/
-            rm -fr dotfiles
-            print_title "DEFAULT EDITOR"
-            EDITOR=("Nano" "Vim");
-            PS3="$prompt1"
-            echo -e "Choose default editor\n"
-            select OPT in "${EDITOR[@]}"; do
-                case "$REPLY" in
-                    1)
-                        sed -i '/EDITOR/s/vim/nano/' /home/$USERNAME/.bashrc
-                        sed -i '/VISUAL/s/vim/nano/' /home/$USERNAME/.bashrc
-                        sed -i '/EDITOR/s/vim/nano/' ~/.bashrc
-                        sed -i '/VISUAL/s/vim/nano/' ~/.bashrc
-                        break
-                        ;;
-                    2)
-                        # VIM
-                        apt-get install -y vim exuberant-ctags
-                        # VIMRC
-                        git clone git://github.com/helmuthdu/vim
-                        mv vim /home/$USERNAME/.vim
-                        ln -sf /home/$USERNAME/.vim/vimrc /home/$USERNAME/.vimrc
-                        # PENTADACTYL [FIREFOX]
-                        git clone git://github.com/helmuthdu/pentadactyl
-                        mv pentadactyl /home/$USERNAME/.pentadactyl
-                        ln -sf /home/$USERNAME/.pentadactyl/pentadactylrc /home/$USERNAME/.pentadactylrc
-                        break
-                        ;;
-                    *)
-                        invalid_option
-                        ;;
-                esac
-            done
-            chown -R $USERNAME:users /home/$USERNAME/.*
-        #}}}
+        print_title "BASHRC"
+        package_install "git"
+        git clone https://github.com/helmuthdu/dotfiles
+        cp dotfiles/.* ~/
+        cp dotfiles/.* /home/$USERNAME/
+        rm -fr dotfiles
+        print_title "DEFAULT EDITOR"
+        EDITOR=("Emacs" "Joe" "Nano" "Vim");
+        PS3="$prompt1"
+        echo -e "Choose default editor\n"
+        select OPT in "${EDITOR[@]}"; do
+            case "$REPLY" in
+                1)
+                    package_install "emacs"
+                    sed -i '/EDITOR/s/vim/emacs/' /home/$USERNAME/.bashrc
+                    sed -i '/VISUAL/s/vim/emacs/' /home/$USERNAME/.bashrc
+                    sed -i '/EDITOR/s/vim/emacs/' ~/.bashrc
+                    sed -i '/VISUAL/s/vim/emacs/' ~/.bashrc
+                    EDITOR=emacs
+                    break
+                    ;;
+                2)
+                    if ! check_package "joe" ; then
+                        su -l $USERNAME --command="
+                            wget http://aur.archlinux.org/packages/jo/joe/joe.tar.gz;
+                            tar zxvf joe.tar.gz;
+                            cd joe;
+                            makepkg -si --noconfirm;
+                            cd ..;
+                            rm -fr joe*
+                        "
+                    fi
+                    sed -i '/EDITOR/s/vim/joe/' /home/$USERNAME/.bashrc
+                    sed -i '/VISUAL/s/vim/joe/' /home/$USERNAME/.bashrc
+                    sed -i '/EDITOR/s/vim/joe/' ~/.bashrc
+                    sed -i '/VISUAL/s/vim/joe/' ~/.bashrc
+                    EDITOR=joe
+                    break
+                    ;;
+                3)
+                    sed -i '/EDITOR/s/vim/nano/' /home/$USERNAME/.bashrc
+                    sed -i '/VISUAL/s/vim/nano/' /home/$USERNAME/.bashrc
+                    sed -i '/EDITOR/s/vim/nano/' ~/.bashrc
+                    sed -i '/VISUAL/s/vim/nano/' ~/.bashrc
+                    EDITOR=nano
+                    break
+                    ;;
+                4)
+                    # VIM
+                    package_install "vim ctags ack"
+                    # VIMRC
+                    git clone https://github.com/helmuthdu/vim
+                    mv vim /home/$USERNAME/.vim
+                    ln -sf /home/$USERNAME/.vim/vimrc /home/$USERNAME/.vimrc
+                    # PENTADACTYL [FIREFOX]
+                    git clone https://github.com/helmuthdu/pentadactyl
+                    mv pentadactyl /home/$USERNAME/.pentadactyl
+                    ln -sf /home/$USERNAME/.pentadactyl/pentadactylrc /home/$USERNAME/.pentadactylrc
+                    EDITOR=vim
+                    break
+                    ;;
+                *)
+                    invalid_option
+                    ;;
+            esac
+        done
+        chown -R $USERNAME:users /home/$USERNAME
     } #}}}
     print_title "SELECT USER ACCOUNT"
     users=(`cat /etc/passwd | ls "/home" | sed 's/\///' | cut -d: -f1`);
@@ -522,6 +554,7 @@ function select_user(){
             invalid_option
         fi
     done
+    [[ ! -f /home/$USERNAME/.bashrc ]] && configure_user_account;
 }
 #}}}
 #AUTOMATIC MODE{{{
