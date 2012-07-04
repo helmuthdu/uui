@@ -1274,7 +1274,7 @@ while [[ 1 ]]
 do
     print_title "OFFICE APPS"
     echo " 1) $(menu_item "libreoffice-common" "LibreOffice")"
-    echo " 2) $(menu_item "goffice" "Abiword + Gnumeric")"
+    echo " 2) $(menu_item "goffice calligra" "$([[ $KDE -eq 1 ]] && echo "Calligra" || echo "Abiword + Gnumeric";)")"
     echo " 3) $(menu_item "texlive-core" "latex")"
     echo " 4) $(menu_item "kchmviewer chmsee" "$([[ $KDE -eq 1 ]] && echo "Kchmviewer" || echo "Chmsee";)")"
     echo " 5) $(menu_item "gcstar")"
@@ -1303,7 +1303,11 @@ do
                 fi
                 ;;
             2)
-                package_install "gnumeric abiword abiword-plugins"
+                if [[ $KDE -eq 1 ]]; then
+                    package_install "calligra"
+                else
+                    package_install "gnumeric abiword abiword-plugins"
+                fi
                 package_install "hunspell-$LANGUAGE_HS"
                 package_install "aspell-$LANGUAGE_AS"
                 ;;
@@ -1493,7 +1497,7 @@ do
     echo "14) $(menu_item "teamspeak-client")"
     echo "15) $(menu_item "teamviewer")"
     echo "16) $(menu_item "transmission-qt transmission-gtk" "Trasmission")"
-    echo "17) $(menu_item "konversation xchat" "$([[ $KDE -eq 1 ]] && echo "Konversation" || echo "X-Chat";)")"
+    echo "17) $(menu_item "quassel xchat" "$([[ $KDE -eq 1 ]] && echo "Quassel" || echo "X-Chat";)")"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1579,7 +1583,7 @@ do
                 ;;
             17)
                 if [[ $KDE -eq 1 ]]; then
-                    package_install "konversation"
+                    package_install "quassel"
                 else
                     package_install "xchat"
                 fi
@@ -1626,11 +1630,11 @@ do
     echo " 3) $(menu_item "banshee")"
     echo " 4) $(menu_item "clementine")"
     echo " 5) $(menu_item "deadbeef")"
-    echo " 6) $(menu_item "exaile")"
-    echo " 7) $(menu_item "musique")"
-    echo " 8) $(menu_item "nuvolaplayer")"
-    echo " 9) $(menu_item "rhythmbox")"
-    echo "10) $(menu_item "spotify")"
+    echo " 6) $(menu_item "musique")"
+    echo " 7) $(menu_item "nuvolaplayer")"
+    echo " 8) $(menu_item "rhythmbox")"
+    echo " 9) $(menu_item "spotify")"
+    echo "10) $(menu_item "tomahawk")"
     echo "11) $(menu_item "soundconverter")"
     echo "12) $(menu_item "puddletag")"
     echo "13) $(menu_item "audacity")"
@@ -1659,19 +1663,16 @@ do
                 package_install "deadbeef"
                 ;;
             6)
-                package_install "exaile"
-                ;;
-            7)
                 package_install "musique"
                 ;;
-            8)
+            7)
                 check_repository "ppa:nuvola-player-builders/stable"
                 package_install "nuvolaplayer"
                 ;;
-            9)
+            8)
                 package_install "rhythmbox"
                 ;;
-            10)
+            9)
                 if ls /etc/apt/sources.list.d/ | grep "spotify" &> /dev/null; then
                     echo -e "\nWARNING: spotify-stable repository already configured"
                 else
@@ -1682,6 +1683,10 @@ do
                 fi
                 pause_function
                 package_install "spotify"
+                ;;
+            10)
+                check_repository "ppa:tomahawk/ppa"
+                package_install "tomahawk"
                 ;;
             11)
                 package_install "soundconverter"
