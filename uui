@@ -898,7 +898,7 @@ function install_desktop_environment(){
             #KDE {{{
             print_title "KDE"
             print_info "KDE is an international free software community producing an integrated set of cross-platform applications designed to run on Linux, FreeBSD, Microsoft Windows, Solaris and Mac OS X systems. It is known for its Plasma Desktop, a desktop environment provided as the default working environment on many Linux distributions."
-            package_install "kde kde-l10n-$LANGUAGE_KDE kipi-plugins"
+            package_install "kubuntu-desktop"
             create_xinitrc "startkde"
             #QTCURVE THEMES #{{{
             wget http://kde-look.org/CONTENT/content-files/144205-Sweet.tar.gz
@@ -1462,6 +1462,7 @@ do
     echo " 7) $(menu_item "mypaint")"
     echo " 8) $(menu_item "scribus")"
     echo " 9) $(menu_item "shotwell")"
+    echo "10) $(menu_item "xnviewmp")"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1496,6 +1497,18 @@ do
                 ;;
             9)
                 package_install "shotwell"
+                ;;
+            10)
+                if ls /etc/apt/sources.list.d/ | grep "getdeb" &> /dev/null; then
+                    echo -e "\nWARNING: Getdeb repository already configured"
+                else
+                    wget -q -O - http://archive.getdeb.net/getdeb-archive.key | sudo apt-key add -
+                    echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps" >> /etc/apt/sources.list.d/getdeb.list
+                    apt-get update
+                    echo -e "\nGetdeb repository added into sources.list.d direcotry"
+                fi
+                pause_function
+                package_install "xnviewmp"
                 ;;
             "b")
                 break

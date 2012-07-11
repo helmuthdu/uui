@@ -204,6 +204,7 @@
     # 7) Mypaint
     # 8) Scribus
     # 9) Shotwell
+    #10) XnViewMP
     GRAPHICS_OPTIONS="2-7 9"
 #}}}
 #INTERNET {{{
