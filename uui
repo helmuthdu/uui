@@ -1308,15 +1308,16 @@ do
     print_title "OFFICE APPS"
     echo " 1) $(menu_item "libreoffice-common" "LibreOffice")"
     echo " 2) $(menu_item "goffice calligra" "$([[ $KDE -eq 1 ]] && echo "Calligra" || echo "Abiword + Gnumeric";)")"
-    echo " 3) $(menu_item "texlive-core" "latex")"
-    echo " 4) $(menu_item "kchmviewer chmsee" "$([[ $KDE -eq 1 ]] && echo "Kchmviewer" || echo "Chmsee";)")"
-    echo " 5) $(menu_item "gcstar")"
-    echo " 6) $(menu_item "homebank")"
-    echo " 7) $(menu_item "impressive")"
-    echo " 8) $(menu_item "nitrotasks")"
-    echo " 9) $(menu_item "ocrfeeder")"
-    echo "10) $(menu_item "xmind")"
-    echo "11) $(menu_item "zathura")"
+    echo " 3) $(menu_item "gwoffice")"
+    echo " 4) $(menu_item "texlive-core" "latex")"
+    echo " 5) $(menu_item "kchmviewer chmsee" "$([[ $KDE -eq 1 ]] && echo "Kchmviewer" || echo "Chmsee";)")"
+    echo " 6) $(menu_item "gcstar")"
+    echo " 7) $(menu_item "homebank")"
+    echo " 8) $(menu_item "impressive")"
+    echo " 9) $(menu_item "nitrotasks")"
+    echo "10) $(menu_item "ocrfeeder")"
+    echo "11) $(menu_item "xmind")"
+    echo "12) $(menu_item "zathura")"
     echo ""
     echo " b) BACK"
     echo ""
@@ -1345,6 +1346,10 @@ do
                 package_install "aspell-$LANGUAGE_AS"
                 ;;
             3)
+                check_repository "ppa:tombeckmann/ppa"
+                package_install "gwoffice"
+                ;;
+            4)
                 print_title "LATEX"
                 package_install "latex-beamer texlive texlive-latex-extra texlive-math-extra"
                 package_install "texmaker"
@@ -1352,38 +1357,38 @@ do
                     package_install "abntex texlive-lang-portuguese"
                 fi
                 ;;
-            4)
+            5)
                 if [[ $KDE -eq 1 ]]; then
                     package_install "kchmviewer"
                 else
                     package_install "chmsee"
                 fi
                 ;;
-            5)
+            6)
                 package_install "gcstar"
                 ;;
-            6)
+            7)
                 package_install "homebank"
                 ;;
-            7)
+            8)
                 package_install "impressive"
                 ;;
-            8)
+            9)
                 check_repository "ppa:cooperjona/nitrotasks"
                 package_install "nitrotasks"
                 ;;
-            9)
+            10)
                 package_install "ocrfeeder tesseract-ocr gocr"
                 package_install "aspell-$LANGUAGE_AS"
                 ;;
-            10)
+            11)
                 if [[ $ARCHI == i686 ]]; then
                     download_package "http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_i386.deb"
                 else
                     download_package "http://www.xmind.net/xmind/downloads/xmind-3.2.1.201011212218_amd64.deb"
                 fi
                 ;;
-            11)
+            12)
                 package_install "zathura"
                 ;;
             "b")

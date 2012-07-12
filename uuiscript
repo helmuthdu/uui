@@ -174,16 +174,17 @@
 #OFFICE {{{
     # 1) LibreOffice
     # 2) GnomeOffice [Abiword, Gnumeric]
-    # 3) Latex + Texmaker
-    # 4) CHM Viewer
-    # 5) GCStar
-    # 6) Homebank
-    # 7) Impressive
-    # 8) Nitrotasks
-    # 9) OCRFeeder
-    #10) Xmind
-    #11) Zathura
-    OFFICE_OPTIONS="1 8 9"
+    # 3) GWoffice
+    # 4) Latex + Texmaker
+    # 5) CHM Viewer
+    # 6) GCStar
+    # 7) Homebank
+    # 8) Impressive
+    # 9) Nitrotasks
+    #10) OCRFeeder
+    #11) Xmind
+    #12) Zathura
+    OFFICE_OPTIONS="8 9"
 #}}}
 #SYSTEM TOOLS {{{
     # 1) Gparted
@@ -246,7 +247,7 @@
         # 3) Pidgin
         # 4) Skype
         # 5) Teamspeak
-        IM_OPTIONS="3"
+        IM_OPTIONS="2 4"
     #}}}
     #IRC {{{
         # 1) Irssi
