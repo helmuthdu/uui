@@ -53,10 +53,11 @@
     VIDEOCARD=4
 #}}}
 #DESKTOP ENVIRONMENT {{{
-    # 1) GNOME
-    # 2) KDE
-    # 3) Unity
-    DESKTOPENV=3
+    # 1) Pantheon
+    # 2) GNOME Shell
+    # 3) KDE
+    # 4) Unity
+    DESKTOPENV=4
 
     #GNOME {{{
         # 1) GNOME Icons
@@ -106,15 +107,16 @@
             # 3) unity-lens-askubuntu
             # 4) unity-lens-cooking
             # 5) unity-lens-graphicdesign
-            # 6) unity-lens-torrents
-            # 7) unity-lens-wikipedia
-            # 8) unity-scope-calculator
-            # 9) unity-scope-cities
-            #10) unity-scope-colourlovers
-            #11) unity-scope-deviantart
-            #12) unity-scope-grooveshark
-            #13) unity-scope-rottentomatoes
-            UNITY_LENS="1 2 6 8 12"
+            # 6) unity-lens-news
+            # 7) unity-lens-torrents
+            # 8) unity-lens-wikipedia
+            # 9) unity-scope-calculator
+            #10) unity-scope-cities
+            #11) unity-scope-colourlovers
+            #12) unity-scope-deviantart
+            #13) unity-scope-grooveshark
+            #14) unity-scope-rottentomatoes
+            UNITY_LENS="1 2 7 9 13"
         #}}}
     #}}}
 

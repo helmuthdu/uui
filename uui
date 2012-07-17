@@ -749,19 +749,33 @@ function install_desktop_environment(){
     print_title "DESKTOP ENVIRONMENT"
     print_info "Desktop environments provide a complete graphical user interface (GUI) for a system by bundling together a variety of X clients written using a common widget toolkit and set of libraries."
     echo -e "Choose your desktop-environment:\n"
-    echo " 1) GNOME Shell"
-    echo " 2) KDE"
-    echo " 3) Unity"
+    echo " 1) Pantheon"
+    echo " 2) GNOME Shell"
+    echo " 3) KDE"
+    echo " 4) Unity"
     echo ""
     echo " b) BACK"
     read_input $DESKTOPENV
     case "$OPTION" in
         1)
+            #ELEMENTARY {{{
+            check_repository "ppa:elementary-os/daily"
+            check_repository "ppa:elementary-os/testing"
+            check_repository "ppa:vala-team/ppa"
+            check_repository "ppa:audience-members/ppa"
+            print_title "GNOME"
+            package_install "elementary-desktop audience"
+            create_xinitrc "gnome-session"
+            CURRENT_STATUS=1
+            GNOME=1
+            ;;
+            #}}}
+        2)
             #GNOME {{{
             check_repository "ppa:webupd8team/gnome3"
             check_repository "ppa:gnome3-team/gnome3"
             print_title "GNOME"
-            apt-get install -y gnome-shell gedit-plugins gnome-tweak-tool
+            package_install "gnome-shell gedit-plugins gnome-tweak-tool"
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
             create_xinitrc "gnome-session"
             #GNOME CUSTOMIZATION {{{
@@ -894,7 +908,7 @@ function install_desktop_environment(){
             GNOME=1
             ;;
             #}}}
-        2)
+        3)
             #KDE {{{
             print_title "KDE"
             print_info "KDE is an international free software community producing an integrated set of cross-platform applications designed to run on Linux, FreeBSD, Microsoft Windows, Solaris and Mac OS X systems. It is known for its Plasma Desktop, a desktop environment provided as the default working environment on many Linux distributions."
@@ -975,7 +989,7 @@ function install_desktop_environment(){
             KDE=1
             ;;
             #}}}
-        3)
+        4)
             #UNITY {{{
             print_title "UNITY"
             apt-get install -y gedit-plugins
@@ -1025,14 +1039,15 @@ function install_desktop_environment(){
                                 echo " 3) $(menu_item "unity-lens-askubuntu")"
                                 echo " 4) $(menu_item "unity-lens-cooking")"
                                 echo " 5) $(menu_item "unity-lens-graphicdesign")"
-                                echo " 6) $(menu_item "unity-lens-torrents")"
-                                echo " 7) $(menu_item "unity-lens-wikipedia")"
-                                echo " 8) $(menu_item "unity-scope-calculator")"
-                                echo " 9) $(menu_item "unity-scope-cities")"
-                                echo "10) $(menu_item "unity-scope-colourlovers")"
-                                echo "11) $(menu_item "unity-scope-deviantart")"
-                                echo "12) $(menu_item "unity-scope-grooveshark")"
-                                echo "13) $(menu_item "unity-scope-rottentomatoes") (movie review)"
+                                echo " 6) $(menu_item "unity-lens-news")"
+                                echo " 7) $(menu_item "unity-lens-torrents")"
+                                echo " 8) $(menu_item "unity-lens-wikipedia")"
+                                echo " 9) $(menu_item "unity-scope-calculator")"
+                                echo "10) $(menu_item "unity-scope-cities")"
+                                echo "11) $(menu_item "unity-scope-colourlovers")"
+                                echo "12) $(menu_item "unity-scope-deviantart")"
+                                echo "13) $(menu_item "unity-scope-grooveshark")"
+                                echo "14) $(menu_item "unity-scope-rottentomatoes") (movie review)"
                                 echo ""
                                 echo " b) BACK"
                                 echo ""
@@ -1056,27 +1071,30 @@ function install_desktop_environment(){
                                             package_install "unity-lens-graphicdesign"
                                             ;;
                                         6)
-                                            package_install "unity-lens-torrents unity-scope-piratebay"
+                                            package_install "unity-lens-news"
                                             ;;
                                         7)
-                                            package_install "unity-lens-wikipedia"
+                                            package_install "unity-lens-torrents unity-scope-piratebay"
                                             ;;
                                         8)
-                                            package_install "unity-scope-calculator"
+                                            package_install "unity-lens-wikipedia"
                                             ;;
                                         9)
-                                            package_install "unity-lens-utilities unity-scope-cities"
+                                            package_install "unity-scope-calculator"
                                             ;;
                                         10)
-                                            package_install "unity-scope-colourlovers"
+                                            package_install "unity-lens-utilities unity-scope-cities"
                                             ;;
                                         11)
-                                            package_install "unity-scope-deviantart"
+                                            package_install "unity-scope-colourlovers"
                                             ;;
                                         12)
-                                            package_install "unity-scope-grooveshark"
+                                            package_install "unity-scope-deviantart"
                                             ;;
                                         13)
+                                            package_install "unity-scope-grooveshark"
+                                            ;;
+                                        14)
                                             package_install "unity-lens-utilities unity-scope-rottentomatoes"
                                             ;;
                                         "b")
