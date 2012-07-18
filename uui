@@ -1940,8 +1940,9 @@ do
     echo "11) $(menu_item "soundconverter")"
     echo "12) $(menu_item "puddletag")"
     echo "13) $(menu_item "audacity")"
-    echo "14) $(menu_item "timidity")"
-    echo "15) $(menu_item "ubuntu-restricted-extras" "Codecs")"
+    echo "14) $(menu_item "oceanaudio")"
+    echo "15) $(menu_item "timidity")"
+    echo "16) $(menu_item "ubuntu-restricted-extras" "Codecs")"
     echo ""
     echo " b) BACK"
     echo ""
@@ -2000,9 +2001,16 @@ do
                 package_install "audacity"
                 ;;
             14)
-                package_install "timidity fluid-soundfont-gs"
+                if [ "$ARCHI" = "i686" ]; then
+                    download_package "http://www.ocenaudio.com.br/downloads/ocenaudio32.deb"
+                else
+                    download_package "http://www.ocenaudio.com.br/downloads/ocenaudio64.deb"
+                fi
                 ;;
             15)
+                package_install "timidity fluid-soundfont-gs"
+                ;;
+            16)
                 package_install "ubuntu-restricted-extras"
                 ;;
             "b")

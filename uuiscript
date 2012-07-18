@@ -284,8 +284,9 @@
     #11) Soundconverter
     #12) Puddletag
     #13) Audacity
-    #14) MIDI
-    #15) Codecs
+    #14) OcenAudio
+    #15) MIDI
+    #16) Codecs
     AUDIO_OPTIONS="4 11 15"
 #}}}
 #VIDEO {{{
