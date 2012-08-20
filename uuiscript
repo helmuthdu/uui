@@ -62,19 +62,11 @@
     #GNOME {{{
         # 1) GNOME Icons
         # 2) GNOME Themes
-        # 3) GNOME Shell Extensions
-        # 4) GNOME Shell Themes
-        # 5) GNOME Activity Journal
-        # 6) Gloobus-preview
-        # 7) Ubuntu-tweak
-        GNOME_OPTIONS="1-7"
-        #GNOME EXTENSIONS {{{
-            # 1) gpaste
-            # 2) media-player
-            # 3) noa11y
-            # 4) weather
-            GNOME_EXTENSIONS="1-4"
-        #}}}
+        # 3) GNOME Shell Themes
+        # 4) GNOME Activity Journal
+        # 5) Gloobus-preview
+        # 6) Ubuntu-tweak
+        GNOME_OPTIONS="1-6"
         #GNOME SHELL THEMES {{{
             # 1) eOS
             # 2) Dark Shine

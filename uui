@@ -195,17 +195,6 @@ function package_remove(){ #{{{
 function contains_element(){ #{{{
     for e in "${@:2}"; do [[ $e == $1 ]] && break; done;
 } #}}}
-function create_xinitrc(){ #{{{
-    echo -e ' #!/bin/sh\n
-if [ -d /etc/X11/xinit/xinitrc.d ]; then
-  for f in /etc/X11/xinit/xinitrc.d/*; do
-    [ -x "$f" ] && . "$f"
-  done
-  unset f
-fi\n' > /home/$USERNAME/.xinitrc
-    echo -e "exec ck-launch-session $1" >> /home/$USERNAME/.xinitrc
-    chown -R $USERNAME:users /home/$USERNAME/.xinitrc
-} #}}}
 function invalid_option(){ #{{{
     print_line
     echo "Invalid option. Try another one."
@@ -750,7 +739,7 @@ function install_desktop_environment(){
     print_info "Desktop environments provide a complete graphical user interface (GUI) for a system by bundling together a variety of X clients written using a common widget toolkit and set of libraries."
     echo -e "Choose your desktop-environment:\n"
     echo " 1) Pantheon"
-    echo " 2) GNOME Shell"
+    echo " 2) GNOME SHELL"
     echo " 3) KDE"
     echo " 4) Unity"
     echo ""
@@ -765,7 +754,6 @@ function install_desktop_environment(){
             check_repository "ppa:audience-members/ppa"
             print_title "GNOME"
             package_install "elementary-desktop audience"
-            create_xinitrc "gnome-session"
             CURRENT_STATUS=1
             GNOME=1
             ;;
@@ -777,18 +765,16 @@ function install_desktop_environment(){
             print_title "GNOME"
             package_install "gnome-shell gedit-plugins gnome-tweak-tool"
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
-            create_xinitrc "gnome-session"
             #GNOME CUSTOMIZATION {{{
             while [[ 1 ]]
             do
                 print_title "GNOME CUSTOMIZATION"
                 echo " 1) $(menu_item "faenza-icon-theme faenza-cupertino faience-icon-theme elementary-icon-theme" "GNOME Icons")"
                 echo " 2) $(menu_item "egtk-bzr orion-gtk-theme zukitwo-themes zukini-theme" "GNOME Themes")"
-                echo " 3) $(menu_item "gnome-shell-extensionss-gpaste gnome-shell-extensions-mediaplayer gnome-shell-extensions-noa11y gnome-shell-extensions-weather" "GNOME Shell Extensions")"
-                echo " 4) $(menu_item "gnome-shell-theme-frieze gnome-shell-theme-elegance" "GNOME Shell Themes")"
-                echo " 5) $(menu_item "gnome-activity-journal")"
-                echo " 6) $(menu_item "gloobus-preview")"
-                echo " 7) $(menu_item "ubuntu-tweak")"
+                echo " 3) $(menu_item "gnome-shell-theme-frieze gnome-shell-theme-elegance" "GNOME Shell Themes")"
+                echo " 4) $(menu_item "gnome-activity-journal")"
+                echo " 5) $(menu_item "gloobus-preview")"
+                echo " 6) $(menu_item "ubuntu-tweak")"
                 echo ""
                 echo " d) DONE"
                 echo ""
@@ -805,47 +791,6 @@ function install_desktop_environment(){
                             OPT=2
                             ;;
                         3)
-                            #GNOMESHELL EXTENSIONS {{{
-                            while [[ 1 ]]
-                            do
-                                print_title "GNOMESHELL EXTENSIONS"
-                                echo " 1) $(menu_item "gnome-shell-extensions-gpaste")"
-                                echo " 2) $(menu_item "gnome-shell-extensions-mediaplayer")"
-                                echo " 3) $(menu_item "gnome-shell-extensions-noa11y")"
-                                echo " 4) $(menu_item "gnome-shell-extensions-weather")"
-                                echo ""
-                                echo " b) BACK"
-                                echo ""
-                                GNOME_EXTENSIONS+=" b"
-                                read_input_options "$GNOME_EXTENSIONS"
-                                for OPT in ${OPTIONS[@]}; do
-                                    case "$OPT" in
-                                        1)
-                                            package_install "gnome-shell-extensions-gpaste"
-                                            ;;
-                                        2)
-                                            package_install "gnome-shell-extensions-mediaplayer"
-                                            ;;
-                                        3)
-                                            package_install "gnome-shell-extensions-noa11y"
-                                            ;;
-                                        4)
-                                            package_install "gnome-shell-extensions-weather"
-                                            ;;
-                                        "b")
-                                            break
-                                            ;;
-                                        *)
-                                            invalid_option
-                                            ;;
-                                    esac
-                                done
-                            elihw
-                            done
-                            #}}}
-                            OPT=3
-                            ;;
-                        4)
                             #GNOMESHELL THEMES {{{
                             while [[ 1 ]]
                             do
@@ -882,14 +827,14 @@ function install_desktop_environment(){
                             #}}}
                             OPT=4
                             ;;
-                        5)
+                        4)
                             package_install "gnome-activity-journal"
                             ;;
-                        6)
+                        5)
                             check_repository "ppa:gloobus-dev/gloobus-preview"
                             package_install "gloobus-preview gloobus-sushi unoconv"
                             ;;
-                        7)
+                        6)
                             check_repository "ppa:tualatrix/ppa"
                             package_install "ubuntu-tweak"
                             ;;
@@ -913,7 +858,6 @@ function install_desktop_environment(){
             print_title "KDE"
             print_info "KDE is an international free software community producing an integrated set of cross-platform applications designed to run on Linux, FreeBSD, Microsoft Windows, Solaris and Mac OS X systems. It is known for its Plasma Desktop, a desktop environment provided as the default working environment on many Linux distributions."
             package_install "kubuntu-desktop"
-            create_xinitrc "startkde"
             #QTCURVE THEMES #{{{
             wget http://kde-look.org/CONTENT/content-files/144205-Sweet.tar.gz
             wget http://kde-look.org/CONTENT/content-files/141920-Kawai.tar.gz
@@ -994,7 +938,6 @@ function install_desktop_environment(){
             print_title "UNITY"
             apt-get install -y gedit-plugins
             package_install "nautilus-image-converter nautilus-open-terminal nautilus-wallpaper"
-            create_xinitrc "gnome-session"
             #UNITY CUSTOMIZATION {{{
             while [[ 1 ]]
             do
@@ -1940,7 +1883,7 @@ do
     echo "11) $(menu_item "soundconverter")"
     echo "12) $(menu_item "puddletag")"
     echo "13) $(menu_item "audacity")"
-    echo "14) $(menu_item "oceanaudio")"
+    echo "14) $(menu_item "ocenaudio")"
     echo "15) $(menu_item "timidity")"
     echo "16) $(menu_item "ubuntu-restricted-extras" "Codecs")"
     echo ""
