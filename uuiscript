@@ -54,26 +54,16 @@
 #}}}
 #DESKTOP ENVIRONMENT {{{
     # 1) Pantheon
-    # 2) GNOME Shell
+    # 2) Gnome Shell
     # 3) KDE
     # 4) Unity
-    DESKTOPENV=4
+    DESKTOPENV=1
 
     #GNOME {{{
         # 1) GNOME Icons
         # 2) GNOME Themes
-        # 3) GNOME Shell Themes
-        # 4) GNOME Activity Journal
-        # 5) Gloobus-preview
-        # 6) Ubuntu-tweak
-        GNOME_OPTIONS="1-6"
-        #GNOME SHELL THEMES {{{
-            # 1) eOS
-            # 2) Dark Shine
-            # 3) Faience
-            # 4) Nord
-            GNOME_SHELL_THEMES="1-4"
-        #}}}
+        # 3) Ubuntu-tweak
+        GNOME_OPTIONS="1-3"
     #}}}
     #KDE {{{
         # 1) Apper
@@ -89,9 +79,8 @@
     #UNITY {{{
         # 1) GNOME Icons
         # 2) GNOME Themes
-        # 3) Gloobus-preview
-        # 4) Ubuntu-tweak
-        # 5) Unity Lens
+        # 3) Ubuntu-tweak
+        # 4) Unity Lens
         UNITY_OPTIONS="1-4"
         #UNITY LENS {{{
             # 1) unity-lens-bookmarks
@@ -113,22 +102,19 @@
     #}}}
 
     #GNOME ICONS {{{
-        # 1) Awoken
-        # 2) Faenza
-        # 3) Faenza-Cupertino
-        # 4) Faience
-        # 5) Elementary
-        GNOME_ICONS="2-5"
+        # 1) Faenza
+        # 2) Faenza-Cupertino
+        # 3) Faience
+        # 4) Elementary
+        GNOME_ICONS="1-4"
     #}}}
     #GTK THEMES {{{
-        # 1) Bluebird
+        # 1) Greybird
         # 2) eGTK
-        # 3) Holo
+        # 3) Faience
         # 4) Adwaita-X Dark
         # 5) Adwaita-X Light
-        # 6) Zukini
-        # 7) Zukitwo
-        GNOME_THEMES="1-7"
+        GNOME_THEMES="1-5"
     #}}}
 #}}}
 #ACCESSORIES {{{
@@ -259,45 +245,66 @@
         VNC_OPTIONS=""
     #}}}
 #}}}
-#LAMP {{{
-    LAMP="y"
-#}}}
 #AUDIO {{{
+  # 1) Players
+  # 2) Editors|Tools
+  # 3) Codecs
+  AUDIO_OPTIONS="1-3"
+  #PLAYERS {{{
     # 1) Amarok
     # 2) Audacious
     # 3) Banshee
     # 4) Clementine
-    # 5) Decibel
-    # 6) Musique
-    # 7) Nuvola
-    # 8) Rhythmbox
-    # 9) Spotify
-    #10) Tomahawk
-    #11) Soundconverter
-    #12) Puddletag
-    #13) Audacity
-    #14) OcenAudio
-    #15) MIDI
-    #16) Codecs
-    AUDIO_OPTIONS="4 11 15"
+    # 5) Deadbeef
+    # 6) Exaile
+    # 7) Musique
+    # 8) Nuvola
+    # 9) Rhythmbox
+    #10) Radiotray
+    #11) Spotify
+    #12) Tomahawk
+    #13) Timidity++
+    AUDIO_PLAYER_OPTIONS="4"
+  #}}}
+  #EDITORS|TOOLS {{{
+    # 1) Soundconverter|Soundkonverter
+    # 2) Puddletag
+    # 3) Audacity
+    # 4) OcenAudio
+    AUDIO_EDITOR_OPTIONS="1"
+  #}}}
 #}}}
 #VIDEO {{{
+  # 1) Players
+  # 2) Editors|Tools
+  # 3) Codecs
+  VIDEO_OPTIONS="1-3"
+  #PLAYERS {{{
     # 1) Audience
     # 2) Gnome Mplayer
     # 3) Parole
     # 4) Minitube
-    # 5) Rosa Media Player
+    # 5) Miro
     # 6) SMplayer
     # 7) VLC
     # 8) XBMC
-    # 9) Arista
-    #10) Transmageddon
-    #11) Kdenlive
-    #12) Openshot
-    #13) Pitivi
-    #14) Kazam
-    #15) Codecs
-    VIDEO_OPTIONS="7 8 15"
+    VIDEO_PLAYER_OPTIONS="7 8"
+  #}}}
+  #EDITORS|TOOLS {{{
+    # 1) Avidemux
+    # 2) Arista
+    # 3) Transmageddon
+    # 4) Kdenlive
+    # 5) Openshot
+    # 6) Pitivi
+    # 7) Kazam
+    VIDEO_EDITOR_OPTIONS="3"
+  #}}}
+#}}}
+#WEBSERVER {{{
+  # 1) LAMP - APACHE, MYSQL & PHP + ADMINER
+  # 2) LAPP - APACHE, POSTGRESQL & PHP + ADMINER
+  WEBSERVER="1"
 #}}}
 #FONTS {{{
     # 1) ttf-dejavu
