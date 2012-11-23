@@ -14,7 +14,7 @@ Install and configure archlinux has never been easier!
 ### With git
 - Install git: `apt-get install git`
 - get the script: `git clone git://github.com/helmuthdu/uui`
-- run the script: `cd aui && ./uui`
+- run the script: `cd uui && ./uui`
 
 ### Without git
 - get the script: ` wget --no-check-certificate https://github.com/helmuthdu/uui/tarball/master -O - | tar xz`
