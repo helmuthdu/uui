@@ -1513,7 +1513,7 @@ function install_internet_apps(){
             for OPT in ${OPTIONS[@]}; do
               case "$OPT" in
                 1)
-                  package_install "chromium flashplugin-installer"
+                  package_install "chromium-browser flashplugin-installer"
                   ;;
                 2)
                   if [ "$ARCHI" = "i686" ]; then
