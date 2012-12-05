@@ -492,42 +492,26 @@ function select_user(){
     #}}}
     #EDITOR {{{
     print_title "DEFAULT EDITOR"
-    EDITORS=("Emacs" "Joe" "Nano" "Vim");
+    editors_list=("emacs" "joe" "nano" "vi" "vim" "zile");
     PS3="$prompt1"
-    echo -e "Choose default editor\n"
-    select OPT in "${EDITORS[@]}"; do
-      case "$REPLY" in
-        1)
-          package_install "emacs"
-          EDITOR=emacs
-          break
-          ;;
-        2)
-          package_install "joe"
-          EDITOR=joe
-          break
-          ;;
-        3)
-          EDITOR=nano
-          break
-          ;;
-        4)
+    echo -e "Select editor\n"
+    select EDITOR in "${editors_list[@]}"; do
+      if contains_element "$EDITOR" "${editors_list[@]}"; then
+        if [[ $EDITOR == joe ]]; then
+          !check_package "joe" && aui_download_packages "joe"
+        elif [[ $EDITOR == vim ]]; then
           package_install "vim exuberant-ctags"
           #VIMRC {{{
-          VIMRC=("Default" "Vanilla" "Get from github");
+          vimrc_list=("Default" "Vanilla" "Get from github");
           PS3="$prompt1"
           echo -e "Choose your .vimrc\n"
-          select OPT in "${VIMRC[@]}"; do
+          select OPT in "${vimrc_list[@]}"; do
             case "$REPLY" in
               1)
                 package_install "git"
                 git clone https://github.com/helmuthdu/vim
                 mv vim /home/$USERNAME/.vim
                 ln -sf /home/$USERNAME/.vim/vimrc /home/$USERNAME/.vimrc
-                # PENTADACTYL [FIREFOX]
-                git clone https://github.com/helmuthdu/pentadactyl
-                mv pentadactyl /home/$USERNAME/.pentadactyl
-                ln -sf /home/$USERNAME/.pentadactyl/pentadactylrc /home/$USERNAME/.pentadactylrc
                 break
                 ;;
               2)
@@ -553,14 +537,15 @@ function select_user(){
             esac
           done
           #}}}
-          EDITOR=vim
-          break
-          ;;
-        *)
-          invalid_option
-          ;;
-      esac
+        else
+          package_install "$EDITOR"
+        fi
+        break
+      else
+        invalid_option
+      fi
     done
+    echo "EDITOR=\"$EDITOR\"" >> /home/$USERNAME/.bashrc
     #}}}
     chown -R $USERNAME:users /home/$USERNAME
   }
