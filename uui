@@ -1161,7 +1161,11 @@ function install_development_apps(){
           package_install "oracle-java7-installer"
           package_install "libjpeg62 libwebkitgtk-1.0-0 git-core"
           if [[ ! -d /opt/Aptana_Studio_3 ]]; then
-            download_package "https://d1iwq2e2xrohf.cloudfront.net/tools/studio/standalone/3.2.2.201208201020/linux/Aptana_Studio_3_Setup_Linux_x86_3.2.2.zip" "/opt"
+            if [[ $ARCHI == i686 ]]; then
+              download_package "http://download.aptana.com/studio3/standalone/3.3.1/linux/Aptana_Studio_3_Setup_Linux_x86_3.3.1.zip"
+            else
+              download_package "http://download.aptana.com/studio3/standalone/3.3.1/linux/Aptana_Studio_3_Setup_Linux_x86_64_3.3.1.zip"
+            fi
             wget http://www.samclarke.com/wp-content/uploads/2012/04/AptanaStudio3.desktop
             mv AptanaStudio3.desktop /usr/share/applications/AptanaStudio3.desktop
           fi
@@ -1205,11 +1209,10 @@ function install_development_apps(){
           sudo npm install -g jslint
           ;;
         12)
-          #http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/
           if [[ $ARCHI == i686 ]]; then
-            download_package "http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.44-1ubu1204-i386.deb"
+            download_package "http://cdn.mysql.com/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.45-1ubu1204-i386.deb"
           else
-            download_package "http://mysql.oss.eznetsols.org/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.44-1ubu1204-amd64.deb"
+            download_package "http://cdn.mysql.com/Downloads/MySQLGUITools/mysql-workbench-gpl-5.2.45-1ubu1204-amd64.deb"
           fi
           apt-get install -fy
           ;;
